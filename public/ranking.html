@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ranking — Natal do Condomínio</title>
-  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .twinkle { box-shadow: 0 0 0 2px rgba(255,255,255,.1), 0 0 24px rgba(16,185,129,.25) inset; }
@@ -17,13 +18,22 @@
   <audio id="bgMusic" src="./assets/jingle-bells.wav" loop preload="auto"></audio>
 
   <header class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-red-700 text-white twinkle">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center gap-3 justify-between">
       <h1 class="text-xl font-bold">🏆 Ranking — Votação de Natal</h1>
-      <div class="flex items-center gap-2">
-        <button id="musicToggle" class="hidden md:inline-flex px-3 py-1.5 bg-white/15 border border-white/30 rounded-lg text-white text-sm">
-          ▶️ Tocar música
+      <div class="flex items-center gap-2 flex-wrap justify-center">
+        <button id="snowToggle" class="px-3 py-2 bg-white/20 hover:bg-white/30 border border-white/40 rounded-lg transition-all" title="Alternar neve">
+          ❄️ <span class="hidden md:inline">Neve</span>
         </button>
-        <a href="./index.html" class="px-3 py-1.5 bg-white text-emerald-700 rounded-lg font-medium">Voltar</a>
+        <button id="sparkleToggle" class="px-3 py-2 bg-white/20 hover:bg-white/30 border border-white/40 rounded-lg transition-all" title="Alternar brilho">
+          ✨ <span class="hidden md:inline">Brilho</span>
+        </button>
+        <button id="musicToggle" class="px-3 py-2 bg-white/20 hover:bg-white/30 border border-white/40 rounded-lg transition-all" title="Alternar música">
+          🔔 <span class="hidden md:inline">Música</span>
+        </button>
+        <span id="adminInfo" class="text-sm opacity-90 mr-1"></span>
+        <button id="loginBtn" class="px-3 py-2 bg-white text-emerald-700 rounded-lg font-medium hidden">Admin Login</button>
+        <button id="logoutBtn" class="px-3 py-2 bg-white/20 border border-white/40 rounded-lg hidden hover:bg-white/30 transition-all">Sair</button>
+        <a href="./index.html" class="px-3 py-2 bg-white text-emerald-700 hover:bg-emerald-50 rounded-lg font-medium transition-all">Voltar</a>
       </div>
     </div>
   </header>
@@ -32,35 +42,141 @@
     <div id="ranking" class="bg-white rounded-2xl shadow p-4 divide-y"></div>
   </main>
 
-  <footer class="text-center text-xs text-slate-500 py-6">
-    © Todos os direitos reservados | Comissão de Natal
+  <footer class="bg-gradient-to-r from-emerald-50 via-red-50 to-emerald-50 border-t border-emerald-200 py-8">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex flex-col items-center gap-2">
+        <div class="bg-white p-3 rounded-lg shadow-md border-2 border-emerald-600">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://natal-votacao-atual.vercel.app" alt="QR Code" class="w-28 h-28">
+        </div>
+        <p class="text-xs text-emerald-700 font-medium">Acesse pelo celular</p>
+      </div>
+      
+      <div class="text-center text-xs text-slate-600 leading-relaxed">
+        <p>© Todos os direitos reservados 2025</p>
+        <p>Desenvolvido por <span class="font-semibold text-emerald-700">Jéssica Maria de Sousa</span></p>
+        <p class="text-red-600 font-medium">Comissão de Natal - Torre 4</p>
+      </div>
+    </div>
   </footer>
+
+  <!-- Modal de acesso administrativo -->
+  <div id="accessModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-[95%] max-w-md p-6 text-center space-y-4">
+      <div class="text-4xl">🔐</div>
+      <h3 class="text-xl font-bold text-slate-800">Área Administrativa</h3>
+      <p class="text-sm text-slate-600">Esta página é restrita aos administradores da votação. Faça login para continuar.</p>
+      <button id="adminLoginBtn" class="w-full px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all">
+        Entrar com Google
+      </button>
+      <a href="./index.html" class="block text-sm text-slate-500 hover:text-slate-700">Voltar para votação</a>
+    </div>
+  </div>
 
   <script src="./js/firebase.js"></script>
   <script>
+    const auth = firebase.auth();
     const db = firebase.firestore();
-    async function carregarRanking() {
-      const rankingEl = document.getElementById('ranking');
-      rankingEl.innerHTML = `<p class="text-sm text-slate-500">Carregando…</p>`;
-      const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
-      let i = 1, html = '';
-      snap.forEach(doc => {
-        const d = doc.data();
-        html += `
-          <div class="py-3 flex items-center gap-3">
-            <div class="w-8 text-lg font-bold ${i<=3?'text-emerald-600':''}">${i}º</div>
-            <img src="${d.urlFoto}" class="w-20 h-20 object-cover rounded-lg border"/>
-            <div class="flex-1">
-              <div class="font-semibold">${d.andar}º andar – Apto ${d.apartamento}</div>
-              <div class="text-sm text-slate-600">${d.votos || 0} votos</div>
-            </div>
+    const accessModal = document.getElementById('accessModal');
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminInfo = document.getElementById('adminInfo');
+    
+    // Lista de emails de administradores autorizados
+    const ADMIN_EMAILS = [
+      'jessicamariadesousacz@gmail.com',
+      // Adicione mais emails de administradores aqui
+    ];
+    
+    let isAdmin = false;
+    
+    function checkAdminAccess(user) {
+      if (!user) {
+        accessModal?.classList.remove('hidden');
+        document.getElementById('ranking').innerHTML = '';
+        return false;
+      }
+      
+      isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
+      
+      if (!isAdmin) {
+        accessModal?.classList.remove('hidden');
+        document.getElementById('ranking').innerHTML = `
+          <div class="p-6 text-center text-red-600">
+            <p class="text-lg font-semibold">Acesso Negado</p>
+            <p class="text-sm mt-2">Você não tem permissão para acessar esta página.</p>
           </div>
         `;
-        i++;
-      });
-      rankingEl.innerHTML = html || `<p class="text-sm text-slate-500">Sem fotos ainda.</p>`;
+        if (adminInfo) adminInfo.textContent = user.email;
+        logoutBtn?.classList.remove('hidden');
+        return false;
+      }
+      
+      accessModal?.classList.add('hidden');
+      if (adminInfo) adminInfo.textContent = `Admin: ${user.displayName || user.email}`;
+      logoutBtn?.classList.remove('hidden');
+      return true;
     }
-    carregarRanking();
+    
+    adminLoginBtn?.addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+      } catch (error) {
+        console.error('Erro no login:', error);
+        alert('Erro ao fazer login: ' + error.message);
+      }
+    });
+    
+    logoutBtn?.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.reload();
+    });
+    
+    auth.onAuthStateChanged(user => {
+      if (checkAdminAccess(user)) {
+        carregarRanking();
+      }
+    });
+    
+    async function carregarRanking() {
+      const rankingEl = document.getElementById('ranking');
+      rankingEl.innerHTML = `<p class="text-sm text-slate-500 p-4">Carregando ranking...</p>`;
+      
+      try {
+        const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+        let i = 1, html = '';
+        
+        snap.forEach(doc => {
+          const d = doc.data();
+          const medalIcon = i === 1 ? '🥇' : i === 2 ? '🥈' : i === 3 ? '🥉' : '';
+          html += `
+            <div class="py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors rounded-lg px-2">
+              <div class="w-12 text-2xl font-bold ${i<=3?'text-emerald-600':'text-slate-400'} text-center">
+                ${medalIcon || i + 'º'}
+              </div>
+              <img src="${d.urlFoto}" class="w-24 h-24 object-cover rounded-lg border-2 ${i<=3?'border-emerald-400':'border-slate-200'} shadow"/>
+              <div class="flex-1">
+                <div class="font-bold text-lg">${d.andar}º andar – Apto ${d.apartamento}</div>
+                <div class="text-sm text-slate-600 mt-1">
+                  <span class="inline-flex items-center gap-1">
+                    <span class="text-lg">⭐</span>
+                    <span class="font-semibold text-emerald-600">${d.votos || 0}</span> 
+                    voto${(d.votos || 0) !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `;
+          i++;
+        });
+        
+        rankingEl.innerHTML = html || `<p class="text-sm text-slate-500 p-4">Nenhuma foto enviada ainda.</p>`;
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        rankingEl.innerHTML = `<p class="text-sm text-red-500 p-4">Erro ao carregar ranking.</p>`;
+      }
+    }
   </script>
   <script src="./js/theme.js"></script>
 </body>
