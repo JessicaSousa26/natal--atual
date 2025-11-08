@@ -26,6 +26,11 @@ async function carregarPeriodo() {
       periodoAviso?.classList.remove('hidden');
       periodoAviso.textContent = `A votação ainda não começou. Início: ${fmt(periodo.inicio)}.`;
     } else if (agora > periodo.fim) {
+      // Redireciona para página de encerramento
+      if (!window.location.pathname.includes('encerramento') && !window.location.pathname.includes('ranking')) {
+        window.location.href = './encerramento.html';
+        return;
+      }
       periodoAviso?.classList.remove('hidden');
       periodoAviso.textContent = `Votação encerrada em ${fmt(periodo.fim)}.`;
     } else {
