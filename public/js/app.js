@@ -13,6 +13,8 @@ const periodoAviso = document.getElementById('periodoAviso');
 
 let currentUser = null;
 let periodo = { inicio: null, fim: null };
+let isAdmin = false;
+const ADMIN_EMAILS = ['jhessymary26@gmail.com'];
 
 function fmt(d){ return new Date(d.seconds*1000).toLocaleString('pt-BR'); }
 
@@ -60,13 +62,17 @@ logoutBtn?.addEventListener('click', async () => {
 auth.onAuthStateChanged(u => {
   currentUser = u;
   if (u) {
+    isAdmin = ADMIN_EMAILS.includes(u.email.toLowerCase());
     if (userInfo) userInfo.textContent = u.displayName || u.email;
     loginBtn?.classList.add('hidden');
     logoutBtn?.classList.remove('hidden');
+    carregarFotos(); // Recarrega para mostrar/ocultar botão X
   } else {
+    isAdmin = false;
     if (userInfo) userInfo.textContent = '';
     loginBtn?.classList.remove('hidden');
     logoutBtn?.classList.add('hidden');
+    carregarFotos();
   }
 });
 
@@ -89,8 +95,19 @@ async function carregarFotos() {
   galeria.innerHTML = '';
   snap.forEach(doc => {
     const d = doc.data();
+    const deleteBtn = isAdmin ? `
+      <button 
+        class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg flex items-center justify-center transition-all transform hover:scale-110" 
+        onclick="deletarFoto('${doc.id}')"
+        title="Deletar foto e votos"
+      >
+        ✕
+      </button>
+    ` : '';
+    
     galeria.innerHTML += `
-      <article class="xmas-card rounded-2xl shadow p-3 flex flex-col gap-2 border border-emerald-100">
+      <article class="xmas-card rounded-2xl shadow p-3 flex flex-col gap-2 border border-emerald-100 relative">
+        ${deleteBtn}
         <img src="${d.urlFoto}" class="w-full aspect-video object-cover rounded-lg border" alt="Foto do ${d.andar}º andar, apto ${d.apartamento}"/>
         <div class="flex items-center justify-between">
           <div>
@@ -175,6 +192,109 @@ formUpload?.addEventListener('submit', async (e) => {
 limparFiltro?.addEventListener('click', () => {
   if (filtroAndar) filtroAndar.value = '';
   carregarFotos();
+});
+
+filtroAndar?.addEventListener('change', carregarFotos);
+
+// Função para deletar foto (apenas admin)
+window.deletarFoto = async (fotoId) => {
+  if (!isAdmin) {
+    alert('Apenas administradores podem deletar fotos.');
+    return;
+  }
+  
+  if (!confirm('⚠️ Tem certeza que deseja deletar esta foto e todos os seus votos? Esta ação não pode ser desfeita!')) {
+    return;
+  }
+  
+  try {
+    const fotoRef = db.collection('fotos_natal').doc(fotoId);
+    
+    // Deletar subcoleção de voters
+    const votersSnap = await fotoRef.collection('voters').get();
+    const batch = db.batch();
+    votersSnap.docs.forEach(doc => batch.delete(doc.ref));
+    
+    // Deletar o documento da foto
+    batch.delete(fotoRef);
+    
+    await batch.commit();
+    
+    alert('✅ Foto deletada com sucesso!');
+    await carregarFotos();
+  } catch (error) {
+    console.error('Erro ao deletar foto:', error);
+    alert('❌ Erro ao deletar foto: ' + error.message);
+  }
+};
+
+// Função para gerar PDF do ranking
+document.getElementById('gerarPDF')?.addEventListener('click', async () => {
+  try {
+    const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+    let content = `
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Ranking - Votação Natalina Torre 4</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; }
+          h1 { color: #059669; text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background-color: #059669; color: white; }
+          tr:nth-child(even) { background-color: #f2f2f2; }
+          .medal { font-size: 24px; }
+        </style>
+      </head>
+      <body>
+        <h1>🎄 Ranking - Votação Natalina Torre 4 2025</h1>
+        <p style="text-align: center; color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Posição</th>
+              <th>Andar</th>
+              <th>Apartamento</th>
+              <th>Votos</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    let pos = 1;
+    snap.forEach(doc => {
+      const d = doc.data();
+      const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
+      content += `
+        <tr>
+          <td class="medal">${medal} ${pos}º</td>
+          <td>${d.andar}º andar</td>
+          <td>${d.apartamento}</td>
+          <td><strong>${d.votos || 0}</strong> voto${(d.votos || 0) !== 1 ? 's' : ''}</td>
+        </tr>
+      `;
+      pos++;
+    });
+    
+    content += `
+          </tbody>
+        </table>
+        <p style="margin-top: 40px; text-align: center; color: #999; font-size: 12px;">
+          © 2025 Comissão de Natal - Torre 4 | Desenvolvido por Jéssica Maria de Sousa
+        </p>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.print();
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    alert('❌ Erro ao gerar PDF: ' + error.message);
+  }
 });
 
 (async () => {
