@@ -19,20 +19,18 @@
     }));
   }
   function draw() {
-    if (!snowEnabled) {
-      ctx.clearRect(0,0,W,H);
-      return;
-    }
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    flakes.forEach(f => {
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
-      ctx.fill();
-      f.y += f.d;
-      f.x += Math.sin(f.y * 0.01);
-      if (f.y > H) { f.y = -5; f.x = Math.random()*W; }
-    });
+    if (snowEnabled) {
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      flakes.forEach(f => {
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+        ctx.fill();
+        f.y += f.d;
+        f.x += Math.sin(f.y * 0.01);
+        if (f.y > H) { f.y = -5; f.x = Math.random()*W; }
+      });
+    }
     animationId = requestAnimationFrame(draw);
   }
   
@@ -44,19 +42,13 @@
   
   window.addEventListener('resize', resize);
   resize(); 
-  if (snowEnabled) draw();
+  draw(); // Sempre inicia o loop
   updateSnowBtn();
   
   snowBtn?.addEventListener('click', () => {
     snowEnabled = !snowEnabled;
     localStorage.setItem('xmas_snow', snowEnabled ? 'on' : 'off');
     updateSnowBtn();
-    if (snowEnabled) {
-      draw();
-    } else {
-      cancelAnimationFrame(animationId);
-      ctx.clearRect(0,0,W,H);
-    }
   });
 })();
 

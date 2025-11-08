@@ -42,12 +42,46 @@
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-6">
-    <div id="ranking" class="bg-white rounded-2xl shadow p-4 divide-y"></div>
+  <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <!-- Painel Administrativo -->
+    <div id="adminPanel" class="hidden bg-white rounded-2xl shadow-lg p-6 border-2 border-emerald-600">
+      <h2 class="text-xl font-bold text-emerald-700 mb-4 flex items-center gap-2">
+        ⚙️ Painel Administrativo
+      </h2>
+      <div class="grid md:grid-cols-2 gap-3">
+        <button id="btnIniciarVotacao" class="px-4 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-all flex items-center justify-center gap-2">
+          ▶️ Iniciar Votação
+        </button>
+        <button id="btnEncerrarVotacao" class="px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-all flex items-center justify-center gap-2">
+          ⏹️ Encerrar Votação
+        </button>
+        <button id="btnZerarVotos" class="px-4 py-3 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-medium transition-all flex items-center justify-center gap-2">
+          🗑️ Zerar Todos os Votos
+        </button>
+        <button id="btnGerarPDF" class="px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all flex items-center justify-center gap-2">
+          📄 Gerar PDF do Ranking
+        </button>
+      </div>
+      <div id="adminMsg" class="mt-3 text-sm font-medium"></div>
+    </div>
+
+    <!-- Ranking -->
+    <div id="ranking" class="bg-white rounded-2xl shadow-lg p-4 divide-y"></div>
   </main>
 
-  <footer class="bg-gradient-to-r from-emerald-50 via-red-50 to-emerald-50 border-t border-emerald-200 py-8">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+  <footer class="relative bg-gradient-to-r from-emerald-50 via-red-50 to-emerald-50 border-t border-emerald-200 py-8">
+    <!-- Corda decorativa -->
+    <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-emerald-700 via-emerald-600 to-red-700 flex items-center justify-around overflow-hidden">
+      <span class="text-yellow-300 text-xl animate-pulse">🎄</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 0.3s;">⭐</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 0.6s;">🎁</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 0.9s;">🔔</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 1.2s;">🎄</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 0.4s;">⭐</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 0.7s;">🎁</span>
+      <span class="text-yellow-300 text-xl animate-pulse" style="animation-delay: 1s;">🔔</span>
+    </div>
+    <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 mt-2">
       <div class="flex flex-col items-center gap-2">
         <div class="bg-white p-3 rounded-lg shadow-md border-2 border-emerald-600">
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://natal-votacao-atual.vercel.app" alt="QR Code" class="w-28 h-28">
@@ -118,6 +152,7 @@
       accessModal?.classList.add('hidden');
       if (adminInfo) adminInfo.textContent = `Admin: ${user.displayName || user.email}`;
       logoutBtn?.classList.remove('hidden');
+      document.getElementById('adminPanel')?.classList.remove('hidden');
       return true;
     }
     
@@ -180,6 +215,149 @@
         rankingEl.innerHTML = `<p class="text-sm text-red-500 p-4">Erro ao carregar ranking.</p>`;
       }
     }
+    
+    // ===== FUNÇÕES ADMINISTRATIVAS =====
+    const adminMsg = document.getElementById('adminMsg');
+    
+    function showAdminMsg(msg, isError = false) {
+      if (adminMsg) {
+        adminMsg.textContent = msg;
+        adminMsg.className = `mt-3 text-sm font-medium ${isError ? 'text-red-600' : 'text-green-600'}`;
+        setTimeout(() => adminMsg.textContent = '', 5000);
+      }
+    }
+    
+    // Iniciar Votação
+    document.getElementById('btnIniciarVotacao')?.addEventListener('click', async () => {
+      if (!confirm('Deseja iniciar a votação agora?')) return;
+      try {
+        const agora = firebase.firestore.Timestamp.now();
+        const fimPadrao = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // +30 dias
+        await db.collection('settings').doc('votacao').set({
+          inicio: agora,
+          fim: fimPadrao
+        });
+        showAdminMsg('✅ Votação iniciada com sucesso!');
+      } catch (error) {
+        showAdminMsg('❌ Erro ao iniciar votação: ' + error.message, true);
+      }
+    });
+    
+    // Encerrar Votação
+    document.getElementById('btnEncerrarVotacao')?.addEventListener('click', async () => {
+      if (!confirm('Deseja encerrar a votação agora? Esta ação é irreversível!')) return;
+      try {
+        const agora = firebase.firestore.Timestamp.now();
+        await db.collection('settings').doc('votacao').update({
+          fim: agora
+        });
+        showAdminMsg('✅ Votação encerrada com sucesso!');
+      } catch (error) {
+        showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
+      }
+    });
+    
+    // Zerar Votos
+    document.getElementById('btnZerarVotos')?.addEventListener('click', async () => {
+      if (!confirm('⚠️ ATENÇÃO: Isso apagará TODOS os votos de TODAS as fotos! Deseja continuar?')) return;
+      if (!confirm('Tem certeza absoluta? Esta ação NÃO pode ser desfeita!')) return;
+      
+      try {
+        const fotosSnap = await db.collection('fotos_natal').get();
+        const batch = db.batch();
+        let count = 0;
+        
+        for (const doc of fotosSnap.docs) {
+          // Zera votos da foto
+          batch.update(doc.ref, { votos: 0 });
+          
+          // Deleta subcoleção de voters
+          const votersSnap = await doc.ref.collection('voters').get();
+          votersSnap.docs.forEach(voterDoc => {
+            batch.delete(voterDoc.ref);
+            count++;
+          });
+        }
+        
+        await batch.commit();
+        showAdminMsg(`✅ ${fotosSnap.size} fotos zeradas e ${count} votos removidos!`);
+        await carregarRanking();
+      } catch (error) {
+        showAdminMsg('❌ Erro ao zerar votos: ' + error.message, true);
+      }
+    });
+    
+    // Gerar PDF
+    document.getElementById('btnGerarPDF')?.addEventListener('click', async () => {
+      try {
+        showAdminMsg('📄 Gerando PDF...');
+        
+        const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+        let content = `
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Ranking - Votação Natalina Torre 4</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              h1 { color: #059669; text-align: center; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+              th { background-color: #059669; color: white; }
+              tr:nth-child(even) { background-color: #f2f2f2; }
+              .medal { font-size: 24px; }
+            </style>
+          </head>
+          <body>
+            <h1>🎄 Ranking - Votação Natalina Torre 4 2025</h1>
+            <p style="text-align: center; color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Posição</th>
+                  <th>Andar</th>
+                  <th>Apartamento</th>
+                  <th>Votos</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+        
+        let pos = 1;
+        snap.forEach(doc => {
+          const d = doc.data();
+          const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
+          content += `
+            <tr>
+              <td class="medal">${medal} ${pos}º</td>
+              <td>${d.andar}º andar</td>
+              <td>${d.apartamento}</td>
+              <td><strong>${d.votos || 0}</strong> voto${(d.votos || 0) !== 1 ? 's' : ''}</td>
+            </tr>
+          `;
+          pos++;
+        });
+        
+        content += `
+              </tbody>
+            </table>
+            <p style="margin-top: 40px; text-align: center; color: #999; font-size: 12px;">
+              © 2025 Comissão de Natal - Torre 4 | Desenvolvido por Jéssica Maria de Sousa
+            </p>
+          </body>
+          </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.print();
+        
+        showAdminMsg('✅ PDF gerado! Use Ctrl+P ou Cmd+P para salvar.');
+      } catch (error) {
+        showAdminMsg('❌ Erro ao gerar PDF: ' + error.message, true);
+      }
+    });
   </script>
   <script src="./js/theme.js"></script>
   <script>
