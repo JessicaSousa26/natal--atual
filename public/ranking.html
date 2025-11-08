@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking — Natal do Condomínio</title>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .twinkle { box-shadow: 0 0 0 2px rgba(255,255,255,.1), 0 0 24px rgba(16,185,129,.25) inset; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-emerald-50 via-white to-red-50 min-h-screen relative overflow-x-hidden">
+
+  <canvas id="snow" class="pointer-events-none fixed inset-0 -z-10"></canvas>
+  <audio id="bgMusic" src="./assets/jingle-bells.wav" loop preload="auto"></audio>
+
+  <header class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-red-700 text-white twinkle">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-xl font-bold">🏆 Ranking — Votação de Natal</h1>
+      <div class="flex items-center gap-2">
+        <button id="musicToggle" class="hidden md:inline-flex px-3 py-1.5 bg-white/15 border border-white/30 rounded-lg text-white text-sm">
+          ▶️ Tocar música
+        </button>
+        <a href="./index.html" class="px-3 py-1.5 bg-white text-emerald-700 rounded-lg font-medium">Voltar</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-6">
+    <div id="ranking" class="bg-white rounded-2xl shadow p-4 divide-y"></div>
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6">
+    © Todos os direitos reservados | Comissão de Natal
+  </footer>
+
+  <script src="./js/firebase.js"></script>
+  <script>
+    const db = firebase.firestore();
+    async function carregarRanking() {
+      const rankingEl = document.getElementById('ranking');
+      rankingEl.innerHTML = `<p class="text-sm text-slate-500">Carregando…</p>`;
+      const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+      let i = 1, html = '';
+      snap.forEach(doc => {
+        const d = doc.data();
+        html += `
+          <div class="py-3 flex items-center gap-3">
+            <div class="w-8 text-lg font-bold ${i<=3?'text-emerald-600':''}">${i}º</div>
+            <img src="${d.urlFoto}" class="w-20 h-20 object-cover rounded-lg border"/>
+            <div class="flex-1">
+              <div class="font-semibold">${d.andar}º andar – Apto ${d.apartamento}</div>
+              <div class="text-sm text-slate-600">${d.votos || 0} votos</div>
+            </div>
+          </div>
+        `;
+        i++;
+      });
+      rankingEl.innerHTML = html || `<p class="text-sm text-slate-500">Sem fotos ainda.</p>`;
+    }
+    carregarRanking();
+  </script>
+  <script src="./js/theme.js"></script>
+</body>
+</html>
