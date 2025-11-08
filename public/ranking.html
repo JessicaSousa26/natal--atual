@@ -70,7 +70,7 @@
     <div id="ranking" class="bg-white rounded-2xl shadow-lg p-4 divide-y"></div>
   </main>
 
-  <footer class="relative bg-gradient-to-r from-green-100 via-red-100 to-green-100 border-t border-green-300 py-8">
+  <footer class="relative bg-gradient-to-r from-green-200 via-red-200 to-green-200 border-t border-green-400 py-8">
     <!-- Corda decorativa -->
     <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-emerald-700 via-emerald-600 to-red-700 flex items-center justify-around overflow-hidden">
       <span class="text-yellow-300 text-xl animate-pulse">🎄</span>
@@ -246,77 +246,86 @@
       // Iniciar Votação
       const btnIniciar = document.getElementById('btnIniciarVotacao');
       console.log('Button iniciar found:', !!btnIniciar);
-      btnIniciar?.addEventListener('click', async () => {
-      if (!confirm('Deseja iniciar a votação agora?')) return;
-      try {
-        const agora = firebase.firestore.Timestamp.now();
-        const fimPadrao = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // +30 dias
-        await db.collection('settings').doc('votacao').set({
-          inicio: agora,
-          fim: fimPadrao
+      if (btnIniciar) {
+        btnIniciar.addEventListener('click', async () => {
+          if (!confirm('Deseja iniciar a votação agora?')) return;
+          try {
+            const agora = firebase.firestore.Timestamp.now();
+            const fimPadrao = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // +30 dias
+            await db.collection('settings').doc('votacao').set({
+              inicio: agora,
+              fim: fimPadrao
+            });
+            showAdminMsg('✅ Votação iniciada com sucesso!');
+          } catch (error) {
+            showAdminMsg('❌ Erro ao iniciar votação: ' + error.message, true);
+          }
         });
-        showAdminMsg('✅ Votação iniciada com sucesso!');
-      } catch (error) {
-        showAdminMsg('❌ Erro ao iniciar votação: ' + error.message, true);
       }
-    });
     
+      
       // Encerrar Votação
       const btnEncerrar = document.getElementById('btnEncerrarVotacao');
       console.log('Button encerrar found:', !!btnEncerrar);
-      btnEncerrar?.addEventListener('click', async () => {
-        if (!confirm('Deseja encerrar a votação agora? Esta ação é irreversível!')) return;
-        try {
-          const agora = firebase.firestore.Timestamp.now();
-          await db.collection('settings').doc('votacao').update({
-            fim: agora
-          });
-          showAdminMsg('✅ Votação encerrada com sucesso!');
-        } catch (error) {
-          showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
-        }
-      });
+      if (btnEncerrar) {
+        btnEncerrar.addEventListener('click', async () => {
+          if (!confirm('Deseja encerrar a votação agora? Esta ação é irreversível!')) return;
+          try {
+            const agora = firebase.firestore.Timestamp.now();
+            await db.collection('settings').doc('votacao').update({
+              fim: agora
+            });
+            showAdminMsg('✅ Votação encerrada com sucesso!');
+          } catch (error) {
+            showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
+          }
+        });
+      }
       
       // Zerar Votos
       const btnZerar = document.getElementById('btnZerarVotos');
       console.log('Button zerar found:', !!btnZerar);
-      btnZerar?.addEventListener('click', async () => {
-      if (!confirm('⚠️ ATENÇÃO: Isso apagará TODOS os votos de TODAS as fotos! Deseja continuar?')) return;
-      if (!confirm('Tem certeza absoluta? Esta ação NÃO pode ser desfeita!')) return;
-      
-      try {
-        const fotosSnap = await db.collection('fotos_natal').get();
-        const batch = db.batch();
-        let count = 0;
-        
-        for (const doc of fotosSnap.docs) {
-          // Zera votos da foto
-          batch.update(doc.ref, { votos: 0 });
+      if (btnZerar) {
+        btnZerar.addEventListener('click', async () => {
+          if (!confirm('⚠️ ATENÇÃO: Isso apagará TODOS os votos de TODAS as fotos! Deseja continuar?')) return;
+          if (!confirm('Tem certeza absoluta? Esta ação NÃO pode ser desfeita!')) return;
           
-          // Deleta subcoleção de voters
-          const votersSnap = await doc.ref.collection('voters').get();
-          votersSnap.docs.forEach(voterDoc => {
-            batch.delete(voterDoc.ref);
-            count++;
-          });
-        }
-        
-        await batch.commit();
-        showAdminMsg(`✅ ${fotosSnap.size} fotos zeradas e ${count} votos removidos!`);
-        await carregarRanking();
-      } catch (error) {
-        showAdminMsg('❌ Erro ao zerar votos: ' + error.message, true);
+          try {
+            const fotosSnap = await db.collection('fotos_natal').get();
+            const batch = db.batch();
+            let count = 0;
+            
+            for (const doc of fotosSnap.docs) {
+              // Zera votos da foto
+              batch.update(doc.ref, { votos: 0 });
+              
+              // Deleta subcoleção de voters
+              const votersSnap = await doc.ref.collection('voters').get();
+              votersSnap.docs.forEach(voterDoc => {
+                batch.delete(voterDoc.ref);
+                count++;
+              });
+            }
+            
+            await batch.commit();
+            showAdminMsg(`✅ ${fotosSnap.size} fotos zeradas e ${count} votos removidos!`);
+            await carregarRanking();
+          } catch (error) {
+            showAdminMsg('❌ Erro ao zerar votos: ' + error.message, true);
+          }
+        });
       }
-    });
     
+      
       // Gerar PDF
       const btnPDF = document.getElementById('btnGerarPDF');
       console.log('Button PDF found:', !!btnPDF);
-      btnPDF?.addEventListener('click', async () => {
-        try {
-          showAdminMsg('📄 Gerando PDF...');
-        
-        const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+      if (btnPDF) {
+        btnPDF.addEventListener('click', async () => {
+          try {
+            showAdminMsg('📄 Gerando PDF...');
+            
+            const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
         let content = `
           <html>
           <head>
@@ -377,11 +386,12 @@
         printWindow.document.close();
         printWindow.print();
         
-          showAdminMsg('✅ PDF gerado! Use Ctrl+P ou Cmd+P para salvar.');
-        } catch (error) {
-          showAdminMsg('❌ Erro ao gerar PDF: ' + error.message, true);
-        }
-      });
+            showAdminMsg('✅ PDF gerado! Use Ctrl+P ou Cmd+P para salvar.');
+          } catch (error) {
+            showAdminMsg('❌ Erro ao gerar PDF: ' + error.message, true);
+          }
+        });
+      }
     }
     
     // Chama setup dos botões após carregar a página
