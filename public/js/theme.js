@@ -5,7 +5,7 @@
   if (!c) return;
   const ctx = c.getContext('2d');
   let W, H, flakes = [];
-  let snowEnabled = localStorage.getItem('xmas_snow') !== 'off';
+  let snowEnabled = localStorage.getItem('xmas_snow') === 'on';
   let animationId;
 
   function resize() {
@@ -21,7 +21,9 @@
   function draw() {
     ctx.clearRect(0,0,W,H);
     if (snowEnabled) {
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillStyle = 'rgba(240,245,250,0.85)'; // Branco acinzentado
+      ctx.shadowColor = 'rgba(200,210,220,0.5)';
+      ctx.shadowBlur = 3;
       flakes.forEach(f => {
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);

@@ -133,6 +133,7 @@
     let isAdmin = false;
     
     function checkAdminAccess(user) {
+      console.log('Checking admin access for:', user?.email);
       if (!user) {
         accessModal?.classList.remove('hidden');
         document.getElementById('ranking').innerHTML = '';
@@ -140,6 +141,7 @@
       }
       
       isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
+      console.log('Is admin?', isAdmin, 'Email:', user.email);
       
       if (!isAdmin) {
         accessModal?.classList.remove('hidden');
@@ -157,7 +159,15 @@
       accessModal?.classList.add('hidden');
       if (adminInfo) adminInfo.textContent = `Admin: ${user.displayName || user.email}`;
       logoutBtn?.classList.remove('hidden');
-      document.getElementById('adminPanel')?.classList.remove('hidden');
+      const panel = document.getElementById('adminPanel');
+      if (panel) {
+        panel.classList.remove('hidden');
+        console.log('Admin panel shown');
+        // Setup dos botões administrativos
+        setTimeout(() => setupAdminButtons(), 100);
+      } else {
+        console.error('Admin panel not found!');
+      }
       return true;
     }
     
@@ -222,18 +232,21 @@
     }
     
     // ===== FUNÇÕES ADMINISTRATIVAS =====
-    const adminMsg = document.getElementById('adminMsg');
-    
-    function showAdminMsg(msg, isError = false) {
-      if (adminMsg) {
-        adminMsg.textContent = msg;
-        adminMsg.className = `mt-3 text-sm font-medium ${isError ? 'text-red-600' : 'text-green-600'}`;
-        setTimeout(() => adminMsg.textContent = '', 5000);
+    function setupAdminButtons() {
+      const adminMsg = document.getElementById('adminMsg');
+      
+      function showAdminMsg(msg, isError = false) {
+        if (adminMsg) {
+          adminMsg.textContent = msg;
+          adminMsg.className = `mt-3 text-sm font-medium ${isError ? 'text-red-600' : 'text-green-600'}`;
+          setTimeout(() => adminMsg.textContent = '', 5000);
+        }
       }
-    }
-    
-    // Iniciar Votação
-    document.getElementById('btnIniciarVotacao')?.addEventListener('click', async () => {
+      
+      // Iniciar Votação
+      const btnIniciar = document.getElementById('btnIniciarVotacao');
+      console.log('Button iniciar found:', !!btnIniciar);
+      btnIniciar?.addEventListener('click', async () => {
       if (!confirm('Deseja iniciar a votação agora?')) return;
       try {
         const agora = firebase.firestore.Timestamp.now();
@@ -248,22 +261,26 @@
       }
     });
     
-    // Encerrar Votação
-    document.getElementById('btnEncerrarVotacao')?.addEventListener('click', async () => {
-      if (!confirm('Deseja encerrar a votação agora? Esta ação é irreversível!')) return;
-      try {
-        const agora = firebase.firestore.Timestamp.now();
-        await db.collection('settings').doc('votacao').update({
-          fim: agora
-        });
-        showAdminMsg('✅ Votação encerrada com sucesso!');
-      } catch (error) {
-        showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
-      }
-    });
-    
-    // Zerar Votos
-    document.getElementById('btnZerarVotos')?.addEventListener('click', async () => {
+      // Encerrar Votação
+      const btnEncerrar = document.getElementById('btnEncerrarVotacao');
+      console.log('Button encerrar found:', !!btnEncerrar);
+      btnEncerrar?.addEventListener('click', async () => {
+        if (!confirm('Deseja encerrar a votação agora? Esta ação é irreversível!')) return;
+        try {
+          const agora = firebase.firestore.Timestamp.now();
+          await db.collection('settings').doc('votacao').update({
+            fim: agora
+          });
+          showAdminMsg('✅ Votação encerrada com sucesso!');
+        } catch (error) {
+          showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
+        }
+      });
+      
+      // Zerar Votos
+      const btnZerar = document.getElementById('btnZerarVotos');
+      console.log('Button zerar found:', !!btnZerar);
+      btnZerar?.addEventListener('click', async () => {
       if (!confirm('⚠️ ATENÇÃO: Isso apagará TODOS os votos de TODAS as fotos! Deseja continuar?')) return;
       if (!confirm('Tem certeza absoluta? Esta ação NÃO pode ser desfeita!')) return;
       
@@ -292,10 +309,12 @@
       }
     });
     
-    // Gerar PDF
-    document.getElementById('btnGerarPDF')?.addEventListener('click', async () => {
-      try {
-        showAdminMsg('📄 Gerando PDF...');
+      // Gerar PDF
+      const btnPDF = document.getElementById('btnGerarPDF');
+      console.log('Button PDF found:', !!btnPDF);
+      btnPDF?.addEventListener('click', async () => {
+        try {
+          showAdminMsg('📄 Gerando PDF...');
         
         const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
         let content = `
@@ -358,11 +377,17 @@
         printWindow.document.close();
         printWindow.print();
         
-        showAdminMsg('✅ PDF gerado! Use Ctrl+P ou Cmd+P para salvar.');
-      } catch (error) {
-        showAdminMsg('❌ Erro ao gerar PDF: ' + error.message, true);
-      }
-    });
+          showAdminMsg('✅ PDF gerado! Use Ctrl+P ou Cmd+P para salvar.');
+        } catch (error) {
+          showAdminMsg('❌ Erro ao gerar PDF: ' + error.message, true);
+        }
+      });
+    }
+    
+    // Chama setup dos botões após carregar a página
+    if (isAdmin) {
+      setupAdminButtons();
+    }
   </script>
   <script src="./js/theme.js"></script>
   <script>
