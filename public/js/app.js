@@ -7,16 +7,86 @@ const logoutBtn = document.getElementById('logoutBtn');
 const userInfo = document.getElementById('userInfo');
 const formUpload = document.getElementById('formUpload');
 const galeria = document.getElementById('galeria');
-const filtroAndar = document.getElementById('filtroAndar');
-const limparFiltro = document.getElementById('limparFiltro');
 const periodoAviso = document.getElementById('periodoAviso');
+const andarSelect = document.getElementById('andar');
+const apartamentoSelect = document.getElementById('apartamento');
 
 let currentUser = null;
 let periodo = { inicio: null, fim: null };
 let isAdmin = false;
 const ADMIN_EMAILS = ['jhessymary26@gmail.com'];
+let usuarioJaEnviou = false;
 
 function fmt(d){ return new Date(d.seconds*1000).toLocaleString('pt-BR'); }
+
+// Atualizar apartamentos baseado no andar selecionado
+andarSelect?.addEventListener('change', function() {
+  const andar = parseInt(this.value);
+  if (!andar) {
+    apartamentoSelect.disabled = true;
+    apartamentoSelect.innerHTML = '<option value="">Selecione o andar primeiro</option>';
+    return;
+  }
+  
+  apartamentoSelect.disabled = false;
+  apartamentoSelect.innerHTML = '<option value="">Selecione o apartamento</option>';
+  
+  // Gerar apartamentos de X01 a X08
+  for (let i = 1; i <= 8; i++) {
+    const numApto = andar * 100 + i; // Ex: andar 2 = 201, 202... andar 19 = 1901, 1902...
+    const option = document.createElement('option');
+    option.value = numApto;
+    option.textContent = numApto;
+    apartamentoSelect.appendChild(option);
+  }
+});
+
+// Verificar se usuário já enviou foto
+async function verificarEnvioUsuario() {
+  if (!currentUser) {
+    usuarioJaEnviou = false;
+    return;
+  }
+  
+  try {
+    const snap = await db.collection('fotos_natal')
+      .where('uploadPor', '==', currentUser.uid)
+      .limit(1)
+      .get();
+    
+    usuarioJaEnviou = !snap.empty;
+    
+    const msg = document.getElementById('msg');
+    const submitBtn = formUpload?.querySelector('button[type="submit"]');
+    
+    if (usuarioJaEnviou && snap.docs[0]) {
+      const dadosFoto = snap.docs[0].data();
+      if (msg) {
+        msg.className = 'text-sm mt-3 font-medium text-yellow-600';
+        msg.textContent = `✅ Você já enviou sua foto (${dadosFoto.andar}º andar - Apto ${dadosFoto.apartamento}). Apenas 1 envio permitido por usuário.`;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtn.textContent = '✓ Foto já enviada';
+      }
+      if (andarSelect) andarSelect.disabled = true;
+      if (apartamentoSelect) apartamentoSelect.disabled = true;
+      const fotoInput = document.getElementById('foto');
+      if (fotoInput) fotoInput.disabled = true;
+    } else {
+      if (msg) msg.textContent = '';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.textContent = '🎄 Enviar Foto';
+      }
+      if (andarSelect) andarSelect.disabled = false;
+    }
+  } catch (error) {
+    console.error('Erro ao verificar envio:', error);
+  }
+}
 
 async function carregarPeriodo() {
   const docRef = db.collection('settings').doc('votacao');
@@ -59,62 +129,53 @@ logoutBtn?.addEventListener('click', async () => {
   }
 });
 
-auth.onAuthStateChanged(u => {
+auth.onAuthStateChanged(async u => {
   currentUser = u;
   if (u) {
     isAdmin = ADMIN_EMAILS.includes(u.email.toLowerCase());
     if (userInfo) userInfo.textContent = u.displayName || u.email;
     loginBtn?.classList.add('hidden');
     logoutBtn?.classList.remove('hidden');
-    carregarFotos(); // Recarrega para mostrar/ocultar botão X
+    await verificarEnvioUsuario(); // Verifica se já enviou foto
+    carregarFotos();
   } else {
     isAdmin = false;
     if (userInfo) userInfo.textContent = '';
     loginBtn?.classList.remove('hidden');
     logoutBtn?.classList.add('hidden');
+    if (formUpload) formUpload.reset();
     carregarFotos();
   }
 });
 
-async function popularFiltroAndar() {
-  const snap = await db.collection('fotos_natal').get();
-  const andares = new Set();
-  snap.forEach(d => andares.add(d.data().andar));
-  if (filtroAndar) {
-    filtroAndar.innerHTML = `<option value="">Todos</option>` + [...andares].sort((a,b)=>a-b).map(a=>`<option>${a}</option>`).join('');
-  }
-}
-
 async function carregarFotos() {
   if (!galeria) return;
-  let ref = db.collection('fotos_natal');
-  const andarEscolhido = filtroAndar?.value;
-  if (andarEscolhido) ref = ref.where('andar', '==', Number(andarEscolhido));
-  const snap = await ref.orderBy('dataEnvio', 'desc').get();
+  const snap = await db.collection('fotos_natal').orderBy('dataEnvio', 'desc').get();
 
   galeria.innerHTML = '';
+  
+  if (snap.empty) {
+    galeria.innerHTML = '<p class="text-center text-slate-500 col-span-full py-8">Nenhuma foto enviada ainda. Seja o primeiro! 🎄</p>';
+    return;
+  }
+  
   snap.forEach(doc => {
     const d = doc.data();
-    const deleteBtn = isAdmin ? `
-      <button 
-        class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg flex items-center justify-center transition-all transform hover:scale-110" 
-        onclick="deletarFoto('${doc.id}')"
-        title="Deletar foto e votos"
-      >
-        ✕
-      </button>
-    ` : '';
-    
     galeria.innerHTML += `
-      <article class="xmas-card rounded-2xl shadow p-3 flex flex-col gap-2 border border-emerald-100 relative">
-        ${deleteBtn}
-        <img src="${d.urlFoto}" class="w-full aspect-video object-cover rounded-lg border" alt="Foto do ${d.andar}º andar, apto ${d.apartamento}"/>
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="font-semibold">${d.andar}º andar — Apto ${d.apartamento}</div>
-            <div class="text-sm text-slate-600"><span id="votos_${doc.id}">${d.votos||0}</span> voto(s)</div>
+      <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all">
+        <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200" alt="Decoração do ${d.andar}º andar, apto ${d.apartamento}"/>
+        <div class="flex flex-col gap-2">
+          <div class="font-bold text-lg text-center">${d.andar}º andar — Apto ${d.apartamento}</div>
+          <div class="text-center">
+            <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+              <span class="text-xl">⭐</span>
+              <span id="votos_${doc.id}">${d.votos||0}</span> 
+              <span class="text-sm">voto${(d.votos||0) !== 1 ? 's' : ''}</span>
+            </span>
           </div>
-          <button class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onclick="votar('${doc.id}')">Votar</button>
+          <button class="w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${doc.id}')">
+            ⭐ Votar nesta decoração
+          </button>
         </div>
       </article>
     `;
@@ -156,149 +217,70 @@ window.votar = async (fotoId) => {
 
 formUpload?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  
   if (!currentUser) {
     alert('Entre com Google para enviar foto.');
     return;
   }
+  
+  if (usuarioJaEnviou) {
+    alert('Você já enviou sua foto. Apenas 1 envio permitido por usuário.');
+    return;
+  }
+  
   const andar = Number(document.getElementById('andar').value);
   const apartamento = document.getElementById('apartamento').value.trim();
   const file = document.getElementById('foto').files[0];
   const msg = document.getElementById('msg');
 
-  if (!file) return;
+  if (!andar || !apartamento) {
+    alert('Selecione o andar e apartamento.');
+    return;
+  }
+
+  if (!file) {
+    alert('Selecione uma foto.');
+    return;
+  }
 
   try {
-    if (msg) msg.textContent = 'Enviando…';
+    if (msg) {
+      msg.textContent = 'Enviando foto...';
+      msg.className = 'text-sm mt-3 font-medium text-blue-600';
+    }
+    
     const path = `natal/${andar}Apto${apartamento}/${Date.now()}_${file.name}`;
     const snap = await storage.ref().child(path).put(file, { cacheControl: 'public,max-age=31536000' });
     const url = await snap.ref.getDownloadURL();
 
     await db.collection('fotos_natal').add({
-      andar, apartamento, urlFoto: url, votos: 0,
+      andar, 
+      apartamento, 
+      urlFoto: url, 
+      votos: 0,
       uploadPor: currentUser.uid,
+      uploadEmail: currentUser.email,
       dataEnvio: firebase.firestore.Timestamp.now()
     });
 
-    if (msg) msg.textContent = 'Foto enviada com sucesso! 🎉';
+    if (msg) {
+      msg.textContent = '✅ Foto enviada com sucesso! 🎉';
+      msg.className = 'text-sm mt-3 font-medium text-green-600';
+    }
+    
     formUpload.reset();
-    await popularFiltroAndar();
+    await verificarEnvioUsuario();
     await carregarFotos();
   } catch (err) {
     console.error(err);
-    if (msg) msg.textContent = 'Falha ao enviar. Verifique permissões do Storage/Firestore.';
-  }
-});
-
-limparFiltro?.addEventListener('click', () => {
-  if (filtroAndar) filtroAndar.value = '';
-  carregarFotos();
-});
-
-filtroAndar?.addEventListener('change', carregarFotos);
-
-// Função para deletar foto (apenas admin)
-window.deletarFoto = async (fotoId) => {
-  if (!isAdmin) {
-    alert('Apenas administradores podem deletar fotos.');
-    return;
-  }
-  
-  if (!confirm('⚠️ Tem certeza que deseja deletar esta foto e todos os seus votos? Esta ação não pode ser desfeita!')) {
-    return;
-  }
-  
-  try {
-    const fotoRef = db.collection('fotos_natal').doc(fotoId);
-    
-    // Deletar subcoleção de voters
-    const votersSnap = await fotoRef.collection('voters').get();
-    const batch = db.batch();
-    votersSnap.docs.forEach(doc => batch.delete(doc.ref));
-    
-    // Deletar o documento da foto
-    batch.delete(fotoRef);
-    
-    await batch.commit();
-    
-    alert('✅ Foto deletada com sucesso!');
-    await carregarFotos();
-  } catch (error) {
-    console.error('Erro ao deletar foto:', error);
-    alert('❌ Erro ao deletar foto: ' + error.message);
-  }
-};
-
-// Função para gerar PDF do ranking
-document.getElementById('gerarPDF')?.addEventListener('click', async () => {
-  try {
-    const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
-    let content = `
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Ranking - Votação Natalina Torre 4</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; }
-          h1 { color: #059669; text-align: center; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-          th { background-color: #059669; color: white; }
-          tr:nth-child(even) { background-color: #f2f2f2; }
-          .medal { font-size: 24px; }
-        </style>
-      </head>
-      <body>
-        <h1>🎄 Ranking - Votação Natalina Torre 4 2025</h1>
-        <p style="text-align: center; color: #666;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Posição</th>
-              <th>Andar</th>
-              <th>Apartamento</th>
-              <th>Votos</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-    
-    let pos = 1;
-    snap.forEach(doc => {
-      const d = doc.data();
-      const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
-      content += `
-        <tr>
-          <td class="medal">${medal} ${pos}º</td>
-          <td>${d.andar}º andar</td>
-          <td>${d.apartamento}</td>
-          <td><strong>${d.votos || 0}</strong> voto${(d.votos || 0) !== 1 ? 's' : ''}</td>
-        </tr>
-      `;
-      pos++;
-    });
-    
-    content += `
-          </tbody>
-        </table>
-        <p style="margin-top: 40px; text-align: center; color: #999; font-size: 12px;">
-          © 2025 Comissão de Natal - Torre 4 | Desenvolvido por Jéssica Maria de Sousa
-        </p>
-      </body>
-      </html>
-    `;
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(content);
-    printWindow.document.close();
-    printWindow.print();
-  } catch (error) {
-    console.error('Erro ao gerar PDF:', error);
-    alert('❌ Erro ao gerar PDF: ' + error.message);
+    if (msg) {
+      msg.textContent = '❌ Falha ao enviar. Tente novamente.';
+      msg.className = 'text-sm mt-3 font-medium text-red-600';
+    }
   }
 });
 
 (async () => {
   await carregarPeriodo();
-  await popularFiltroAndar();
   await carregarFotos();
 })();

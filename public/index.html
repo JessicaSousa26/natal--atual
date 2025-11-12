@@ -84,46 +84,58 @@
       <form id="formUpload" class="grid md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Andar</label>
-          <input type="number" min="0" id="andar" placeholder="Ex: 2" required class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
+          <select id="andar" required class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
+            <option value="">Selecione o andar</option>
+            <option value="1">1º andar</option>
+            <option value="2">2º andar</option>
+            <option value="3">3º andar</option>
+            <option value="4">4º andar</option>
+            <option value="5">5º andar</option>
+            <option value="6">6º andar</option>
+            <option value="7">7º andar</option>
+            <option value="8">8º andar</option>
+            <option value="9">9º andar</option>
+            <option value="10">10º andar</option>
+            <option value="11">11º andar</option>
+            <option value="12">12º andar</option>
+            <option value="13">13º andar</option>
+            <option value="14">14º andar</option>
+            <option value="15">15º andar</option>
+            <option value="16">16º andar</option>
+            <option value="17">17º andar</option>
+            <option value="18">18º andar</option>
+            <option value="19">19º andar</option>
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Apartamento</label>
-          <input type="text" id="apartamento" placeholder="Ex: 204" required class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
+          <select id="apartamento" required disabled class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed">
+            <option value="">Selecione o andar primeiro</option>
+          </select>
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-slate-700 mb-1">Foto (jpg/png)</label>
           <input type="file" id="foto" accept="image/*" required class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
         </div>
-        <button class="md:col-span-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+        <button type="submit" class="md:col-span-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-lg px-6 py-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
           🎄 Enviar Foto
         </button>
       </form>
       <p id="msg" class="text-sm mt-3 font-medium"></p>
     </section>
 
-    <!-- Filtros -->
-    <section class="xmas-card rounded-2xl shadow-lg p-4 flex flex-wrap gap-3 items-end border-2 border-slate-200">
-      <div class="flex-1 min-w-[200px]">
-        <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
-          🏢 <span>Filtrar por andar:</span>
-        </label>
-        <select id="filtroAndar" class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
-          <option value="">Todos os andares</option>
-        </select>
-      </div>
-      <button id="limparFiltro" class="px-4 py-2 rounded-lg border-2 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
-        Limpar
-      </button>
-      <button id="gerarPDF" class="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-        📄 Gerar PDF
-      </button>
-      <a href="./ranking.html" class="ml-auto px-6 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-        🏆 Ver Ranking
+    <!-- Botões de ação -->
+    <section class="xmas-card rounded-2xl shadow-lg p-4 flex flex-wrap gap-3 justify-center items-center border-2 border-slate-200">
+      <a href="./ranking.html" class="px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+        🏆 Ver Ranking Completo
       </a>
     </section>
 
-    <!-- Galeria -->
-    <section class="grid sm:grid-cols-2 md:grid-cols-3 gap-4" id="galeria"></section>
+    <!-- Galeria de Decorações -->
+    <section>
+      <h2 class="text-2xl font-bold text-center mb-4 text-emerald-700">🎄 Galeria de Decorações</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="galeria"></div>
+    </section>
   </main>
 
   <footer class="relative bg-gradient-to-r from-green-200 via-red-200 to-green-200 border-t border-green-400 py-8">

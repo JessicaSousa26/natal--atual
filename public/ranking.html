@@ -66,10 +66,21 @@
       <div id="adminMsg" class="mt-3 text-sm font-medium"></div>
     </div>
 
-    <!-- Botão de Gerar PDF (visível para todos) -->
-    <div class="bg-white rounded-2xl shadow-lg p-4 flex justify-center">
-      <button id="btnGerarPDFPublico" class="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-2">
-        📄 Gerar PDF do Ranking
+    <!-- Filtros e Ações -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-3 items-end">
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1">
+          🏢 <span>Filtrar por andar:</span>
+        </label>
+        <select id="filtroAndar" class="w-full border-2 border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 transition-colors">
+          <option value="">Todos os andares</option>
+        </select>
+      </div>
+      <button id="limparFiltro" class="px-4 py-2 rounded-lg border-2 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
+        Limpar Filtro
+      </button>
+      <button id="btnGerarPDFPublico" class="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center gap-2">
+        📄 Gerar PDF
       </button>
     </div>
 
@@ -195,17 +206,49 @@
     
     auth.onAuthStateChanged(user => {
       if (checkAdminAccess(user)) {
+        popularFiltroAndar();
         carregarRanking();
       }
     });
     
+    // Popular select de filtro de andar
+    async function popularFiltroAndar() {
+      try {
+        const snap = await db.collection('fotos_natal').get();
+        const andares = new Set();
+        snap.forEach(d => andares.add(d.data().andar));
+        
+        const filtroAndar = document.getElementById('filtroAndar');
+        if (filtroAndar) {
+          filtroAndar.innerHTML = '<option value="">Todos os andares</option>' + 
+            [...andares].sort((a,b)=>a-b).map(a=>`<option value="${a}">${a}º andar</option>`).join('');
+        }
+      } catch (error) {
+        console.error('Erro ao popular filtro:', error);
+      }
+    }
+    
     async function carregarRanking() {
       const rankingEl = document.getElementById('ranking');
+      const filtroAndar = document.getElementById('filtroAndar');
       rankingEl.innerHTML = `<p class="text-sm text-slate-500 p-4">Carregando ranking...</p>`;
       
       try {
-        const snap = await db.collection('fotos_natal').orderBy('votos', 'desc').get();
+        let query = db.collection('fotos_natal');
+        
+        // Aplicar filtro de andar se selecionado
+        const andarFiltrado = filtroAndar?.value;
+        if (andarFiltrado) {
+          query = query.where('andar', '==', Number(andarFiltrado));
+        }
+        
+        const snap = await query.orderBy('votos', 'desc').get();
         let i = 1, html = '';
+        
+        if (snap.empty) {
+          rankingEl.innerHTML = '<p class="text-sm text-slate-500 p-4 text-center">Nenhuma foto encontrada.</p>';
+          return;
+        }
         
         snap.forEach(doc => {
           const d = doc.data();
@@ -514,6 +557,14 @@
         console.error('Erro ao gerar PDF:', error);
         alert('❌ Erro ao gerar PDF: ' + error.message);
       }
+    });
+    
+    // Event listeners para filtros
+    document.getElementById('filtroAndar')?.addEventListener('change', carregarRanking);
+    document.getElementById('limparFiltro')?.addEventListener('click', () => {
+      const filtro = document.getElementById('filtroAndar');
+      if (filtro) filtro.value = '';
+      carregarRanking();
     });
   </script>
   <script src="./js/theme.js"></script>
