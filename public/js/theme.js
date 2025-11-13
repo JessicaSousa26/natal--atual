@@ -5,13 +5,15 @@
   if (!c) return;
   const ctx = c.getContext('2d');
   let W, H, flakes = [];
-  let snowEnabled = localStorage.getItem('xmas_snow') === 'on';
+  // Ativar neve automaticamente se não houver preferência salva
+  let snowEnabled = localStorage.getItem('xmas_snow') !== 'off';
   let animationId;
 
   function resize() {
     W = c.width = window.innerWidth;
     H = c.height = window.innerHeight;
-    flakes = Array.from({ length: Math.min(140, Math.floor(W/10)) }, () => ({
+    // Quantidade média de neve: 80 flocos
+    flakes = Array.from({ length: Math.min(80, Math.floor(W/15)) }, () => ({
       x: Math.random()*W,
       y: Math.random()*H,
       r: Math.random()*2 + 1.2,
@@ -46,6 +48,11 @@
   resize(); 
   draw(); // Sempre inicia o loop
   updateSnowBtn();
+  
+  // Salvar preferência inicial se ativado automaticamente
+  if (snowEnabled && !localStorage.getItem('xmas_snow')) {
+    localStorage.setItem('xmas_snow', 'on');
+  }
   
   snowBtn?.addEventListener('click', () => {
     snowEnabled = !snowEnabled;
@@ -124,6 +131,7 @@
   const sparkleBtn = document.getElementById('sparkleToggle');
   if (!sparkleBtn) return;
   
+  // Ativar brilho automaticamente se não houver preferência salva
   let sparkleEnabled = localStorage.getItem('xmas_sparkle') !== 'off';
   let sparkleInterval;
   
@@ -151,7 +159,8 @@
   
   function startSparkles() {
     if (sparkleInterval) return;
-    sparkleInterval = setInterval(createSparkle, 800);
+    // Quantidade média: 1 brilho a cada 1.5 segundos
+    sparkleInterval = setInterval(createSparkle, 1500);
   }
   
   function stopSparkles() {
@@ -177,7 +186,13 @@
   }
   
   updateSparkleBtn();
-  if (sparkleEnabled) startSparkles();
+  if (sparkleEnabled) {
+    startSparkles();
+    // Salvar preferência inicial se ativado automaticamente
+    if (!localStorage.getItem('xmas_sparkle')) {
+      localStorage.setItem('xmas_sparkle', 'on');
+    }
+  }
   
   sparkleBtn.addEventListener('click', () => {
     sparkleEnabled = !sparkleEnabled;

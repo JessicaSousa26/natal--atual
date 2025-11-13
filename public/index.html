@@ -399,6 +399,56 @@
     </div>
   </div>
 
+  <!-- 📋 Modal de Aceite dos Termos -->
+  <div id="termosModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-[95%] max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="bg-gradient-to-r from-emerald-700 to-red-700 text-white p-6">
+        <div class="text-center">
+          <div class="text-4xl mb-2">🎄</div>
+          <h3 class="text-2xl font-bold">Termo de Adesão</h3>
+          <p class="text-sm mt-1 opacity-90">Gincana de Decoração Natalina - Torre 4</p>
+        </div>
+      </div>
+      
+      <div class="overflow-y-auto p-6 space-y-4 text-sm flex-1">
+        <p class="text-center font-semibold text-slate-700">Condomínio Reserva Parque Clube – Torre 4 | Águas Claras – DF</p>
+        
+        <div class="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded">
+          <h4 class="font-bold text-emerald-800 mb-2">📌 Resumo dos Pontos Principais:</h4>
+          <ul class="list-disc list-inside space-y-1 text-slate-700">
+            <li>Participação voluntária e exclusiva para moradores da Torre 4</li>
+            <li>Apenas <strong>1 envio de foto por usuário</strong></li>
+            <li>Apenas <strong>1 voto por e-mail</strong></li>
+            <li>A foto não pode conter número do apartamento ou identificação</li>
+            <li>Decoração deve ser segura, discreta e removível</li>
+            <li>Votação: 17/11/2025 até 21/12/2025</li>
+            <li>Resultado: 22/12/2025</li>
+          </ul>
+        </div>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-600 p-4 rounded">
+          <h4 class="font-bold text-yellow-800 mb-2">⚠️ Atenção:</h4>
+          <p class="text-slate-700">Ao clicar em "Aceito os Termos", você declara ter lido e concordar com todas as regras da gincana, incluindo critérios de participação, premiação, decoração, votação e penalidades.</p>
+        </div>
+
+        <div class="text-center">
+          <button id="verTermosCompletos" class="text-emerald-600 hover:text-emerald-700 underline text-sm font-medium">
+            📄 Ler termo completo acima
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t p-6 bg-slate-50 flex gap-3 justify-center">
+        <button id="btnRecusarTermos" class="px-6 py-3 rounded-lg border-2 border-slate-300 hover:bg-slate-100 text-slate-700 font-medium transition-all">
+          Cancelar
+        </button>
+        <button id="btnAceitarTermos" class="px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-lg transition-all">
+          ✓ Aceito os Termos
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="./js/firebase.js"></script>
   <script src="./js/app.js"></script>
   <script src="./js/theme.js"></script>

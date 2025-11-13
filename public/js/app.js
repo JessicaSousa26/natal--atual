@@ -16,8 +16,50 @@ let periodo = { inicio: null, fim: null };
 let isAdmin = false;
 const ADMIN_EMAILS = ['jhessymary26@gmail.com'];
 let usuarioJaEnviou = false;
+let termosAceitos = localStorage.getItem('termosAceitosNatal2025') === 'true';
 
 function fmt(d){ return new Date(d.seconds*1000).toLocaleString('pt-BR'); }
+
+// ===== MODAL DE TERMOS =====
+const termosModal = document.getElementById('termosModal');
+const btnAceitarTermos = document.getElementById('btnAceitarTermos');
+const btnRecusarTermos = document.getElementById('btnRecusarTermos');
+const verTermosCompletos = document.getElementById('verTermosCompletos');
+
+function mostrarTermos() {
+  if (termosModal) termosModal.classList.remove('hidden');
+}
+
+function fecharTermos() {
+  if (termosModal) termosModal.classList.add('hidden');
+}
+
+btnAceitarTermos?.addEventListener('click', () => {
+  termosAceitos = true;
+  localStorage.setItem('termosAceitosNatal2025', 'true');
+  fecharTermos();
+  
+  // Se não estiver logado, pedir login
+  if (!currentUser) {
+    alert('Agora você precisa fazer login com sua conta Google para continuar.');
+    loginBtn?.click();
+  }
+});
+
+btnRecusarTermos?.addEventListener('click', () => {
+  fecharTermos();
+  alert('Você precisa aceitar os termos para participar da votação natalina.');
+});
+
+verTermosCompletos?.addEventListener('click', () => {
+  // Scroll para o termo completo no topo da página
+  fecharTermos();
+  const termoCompleto = document.querySelector('details');
+  if (termoCompleto) {
+    termoCompleto.open = true;
+    termoCompleto.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
 
 // Atualizar apartamentos baseado no andar selecionado
 andarSelect?.addEventListener('change', function() {
@@ -183,10 +225,19 @@ async function carregarFotos() {
 }
 
 window.votar = async (fotoId) => {
-  if (!currentUser) {
-    alert('Entre com Google para votar.');
+  // Verificar se aceitou os termos
+  if (!termosAceitos) {
+    mostrarTermos();
     return;
   }
+  
+  // Verificar se está logado
+  if (!currentUser) {
+    alert('Você precisa fazer login com sua conta Google para votar.');
+    loginBtn?.click();
+    return;
+  }
+  
   const fotoRef = db.collection('fotos_natal').doc(fotoId);
   const voterRef = fotoRef.collection('voters').doc(currentUser.uid);
 
@@ -218,8 +269,16 @@ window.votar = async (fotoId) => {
 formUpload?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
+  // Verificar se aceitou os termos
+  if (!termosAceitos) {
+    mostrarTermos();
+    return;
+  }
+  
+  // Verificar se está logado
   if (!currentUser) {
-    alert('Entre com Google para enviar foto.');
+    alert('Você precisa fazer login com sua conta Google para enviar foto.');
+    loginBtn?.click();
     return;
   }
   
