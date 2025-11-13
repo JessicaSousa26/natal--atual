@@ -204,21 +204,11 @@ async function carregarFotos() {
   snap.forEach(doc => {
     const d = doc.data();
     galeria.innerHTML += `
-      <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all">
-        <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200" alt="Decoração do ${d.andar}º andar, apto ${d.apartamento}"/>
-        <div class="flex flex-col gap-2">
-          <div class="font-bold text-lg text-center">${d.andar}º andar — Apto ${d.apartamento}</div>
-          <div class="text-center">
-            <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-              <span class="text-xl">⭐</span>
-              <span id="votos_${doc.id}">${d.votos||0}</span> 
-              <span class="text-sm">voto${(d.votos||0) !== 1 ? 's' : ''}</span>
-            </span>
-          </div>
-          <button class="w-full px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${doc.id}')">
-            ⭐ Votar nesta decoração
-          </button>
-        </div>
+      <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
+        <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200 group-hover:border-emerald-400 transition-all" alt="Decoração Natalina"/>
+        <button class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${doc.id}')">
+          ⭐ Votar nesta decoração
+        </button>
       </article>
     `;
   });
@@ -259,8 +249,8 @@ window.votar = async (fotoId) => {
       tx.update(fotoRef, { votos: votosAtuais + 1 });
     });
 
-    const span = document.getElementById(`votos_${fotoId}`);
-    if (span) span.textContent = Number(span.textContent) + 1;
+    // Mostrar mensagem de sucesso
+    alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄');
   } catch (e) {
     alert(e.message);
   }

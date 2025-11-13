@@ -23,9 +23,9 @@
   function draw() {
     ctx.clearRect(0,0,W,H);
     if (snowEnabled) {
-      ctx.fillStyle = 'rgba(240,245,250,0.85)'; // Branco acinzentado
-      ctx.shadowColor = 'rgba(200,210,220,0.5)';
-      ctx.shadowBlur = 3;
+      ctx.fillStyle = 'rgba(135,206,250,0.85)'; // Azul claro (sky blue)
+      ctx.shadowColor = 'rgba(70,130,180,0.6)'; // Sombra azul
+      ctx.shadowBlur = 4;
       flakes.forEach(f => {
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
