@@ -12,12 +12,12 @@
   function resize() {
     W = c.width = window.innerWidth;
     H = c.height = window.innerHeight;
-    // MUITA neve: 300 flocos
-    flakes = Array.from({ length: Math.min(300, Math.floor(W/4)) }, () => ({
+    // Quantidade média de neve: 80 flocos
+    flakes = Array.from({ length: Math.min(80, Math.floor(W/15)) }, () => ({
       x: Math.random()*W,
       y: Math.random()*H,
-      r: Math.random()*3 + 1,
-      d: Math.random()*2 + .5
+      r: Math.random()*2 + 1.2,
+      d: Math.random()*1 + .5
     }));
   }
   function draw() {
@@ -159,8 +159,8 @@
   
   function startSparkles() {
     if (sparkleInterval) return;
-    // MUITO brilho: 1 brilho a cada 0.1 segundos (100ms)
-    sparkleInterval = setInterval(createSparkle, 100);
+    // Quantidade média: 1 brilho a cada 1.5 segundos
+    sparkleInterval = setInterval(createSparkle, 1500);
   }
   
   function stopSparkles() {
