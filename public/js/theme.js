@@ -81,18 +81,18 @@
     audio.play().then(() => {
       localStorage.setItem(LS_KEY, 'on');
       setBtn('on');
+      modal?.classList.add('hidden');
     }).catch(() => {
       modal?.classList.remove('hidden');
     });
   }
 
-  if (pref === 'on') {
-    tryPlay();
-  } else if (pref === 'off') {
-    setBtn('off');
+  // Sempre tentar tocar automaticamente se não foi desativada
+  if (pref !== 'off') {
+    // Pequeno delay para garantir que a página carregou
+    setTimeout(() => tryPlay(), 500);
   } else {
     setBtn('off');
-    modal?.classList.remove('hidden');
   }
 
   btn.addEventListener('click', () => {
