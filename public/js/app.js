@@ -314,6 +314,25 @@ window.votar = async (fotoId) => {
   const voterRef = fotoRef.collection('voters').doc(currentUser.uid);
 
   try {
+    // Verificar se o usuário já votou em QUALQUER foto
+    const todasFotos = await db.collection('fotos_natal').get();
+    let jaVotou = false;
+    let fotoVotada = null;
+    
+    for (const doc of todasFotos.docs) {
+      const voterDoc = await doc.ref.collection('voters').doc(currentUser.uid).get();
+      if (voterDoc.exists) {
+        jaVotou = true;
+        fotoVotada = doc.data();
+        break;
+      }
+    }
+    
+    if (jaVotou) {
+      alert(`❌ Você já votou!\n\nVocê pode votar apenas 1 vez.\n\nSeu voto foi para: ${fotoVotada.andar}º andar - Apto ${fotoVotada.apartamento}`);
+      return;
+    }
+    
     await db.runTransaction(async (tx) => {
       const [fotoSnap, voterSnap] = await Promise.all([tx.get(fotoRef), tx.get(voterRef)]);
       if (!fotoSnap.exists) throw new Error('Foto não encontrada');
@@ -332,7 +351,7 @@ window.votar = async (fotoId) => {
     });
 
     // Mostrar mensagem de sucesso
-    alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄');
+    alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄\n\nVocê não poderá votar novamente.');
   } catch (e) {
     alert(e.message);
   }
