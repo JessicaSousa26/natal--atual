@@ -36,7 +36,7 @@
       width: 100%;
     }
     .zoom-container:hover img {
-      transform: scale(1.15);
+      transform: scale(1.35);
     }
   </style>
 </head>
@@ -52,7 +52,7 @@
   <header class="bg-gradient-to-r from-red-700 via-red-600 to-emerald-700 text-white twinkle">
     <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center gap-3 justify-between">
       <h1 class="text-xl md:text-2xl font-extrabold tracking-wide">
-        🎄 Votação Natalina da Torre 4
+        🎄✨ Votação Natalina da Torre 4 🎁
       </h1>
       <div class="flex items-center gap-2 flex-wrap justify-center">
         <!-- Botões de controle -->
@@ -422,7 +422,24 @@
 
     <!-- Galeria de Decorações -->
     <section>
-      <h2 class="text-2xl font-bold text-center mb-4 text-emerald-700">🎄 Galeria de Decorações</h2>
+      <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+        <h2 class="text-2xl font-bold text-emerald-700">🎄 Galeria de Decorações</h2>
+        <div id="paginacaoControles" class="hidden flex items-center gap-3">
+          <label class="text-sm font-medium text-slate-700">Itens por página:</label>
+          <select id="itensPorPagina" class="border-2 border-emerald-300 rounded-lg px-3 py-2 text-sm focus:border-emerald-500">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <div class="flex gap-2">
+            <button id="btnPaginaAnterior" class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all">‹</button>
+            <span id="infoPagina" class="px-3 py-2 text-sm font-medium text-slate-700"></span>
+            <button id="btnProximaPagina" class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all">›</button>
+          </div>
+        </div>
+      </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="galeria"></div>
     </section>
   </main>

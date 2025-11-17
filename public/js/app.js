@@ -11,12 +11,24 @@ const periodoAviso = document.getElementById('periodoAviso');
 const andarSelect = document.getElementById('andar');
 const apartamentoSelect = document.getElementById('apartamento');
 
+// Elementos de paginação
+const paginacaoControles = document.getElementById('paginacaoControles');
+const itensPorPaginaSelect = document.getElementById('itensPorPagina');
+const btnPaginaAnterior = document.getElementById('btnPaginaAnterior');
+const btnProximaPagina = document.getElementById('btnProximaPagina');
+const infoPagina = document.getElementById('infoPagina');
+
 let currentUser = null;
 let periodo = { inicio: null, fim: null };
 let isAdmin = false;
 const ADMIN_EMAILS = ['jhessymary26@gmail.com'];
 let usuarioJaEnviou = false;
 let termosAceitos = localStorage.getItem('termosAceitosNatal2025') === 'true';
+
+// Variáveis de paginação
+let todasFotos = [];
+let paginaAtual = 1;
+let itensPorPagina = 10;
 
 function fmt(d){ return new Date(d.seconds*1000).toLocaleString('pt-BR'); }
 
@@ -198,23 +210,91 @@ async function carregarFotos() {
   
   if (snap.empty) {
     galeria.innerHTML = '<p class="text-center text-slate-500 col-span-full py-8">Nenhuma foto enviada ainda. Seja o primeiro! 🎄</p>';
+    if (paginacaoControles) paginacaoControles.classList.add('hidden');
     return;
   }
   
+  // Armazenar todas as fotos
+  todasFotos = [];
   snap.forEach(doc => {
-    const d = doc.data();
+    todasFotos.push({ id: doc.id, data: doc.data() });
+  });
+  
+  // Mostrar controles de paginação se houver mais de 10 fotos
+  if (todasFotos.length > 10) {
+    if (paginacaoControles) paginacaoControles.classList.remove('hidden');
+  } else {
+    if (paginacaoControles) paginacaoControles.classList.add('hidden');
+  }
+  
+  renderizarPagina();
+}
+
+function renderizarPagina() {
+  if (!galeria) return;
+  
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const fim = inicio + itensPorPagina;
+  const fotosPagina = todasFotos.slice(inicio, fim);
+  
+  galeria.innerHTML = '';
+  
+  fotosPagina.forEach(foto => {
+    const d = foto.data;
     galeria.innerHTML += `
       <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
         <div class="zoom-container border-2 border-slate-200 group-hover:border-emerald-400">
           <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover" alt="Decoração Natalina"/>
         </div>
-        <button class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${doc.id}')">
+        <button class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${foto.id}')">
           ⭐ Votar nesta decoração
         </button>
       </article>
     `;
   });
+  
+  atualizarControlesPaginacao();
 }
+
+function atualizarControlesPaginacao() {
+  const totalPaginas = Math.ceil(todasFotos.length / itensPorPagina);
+  
+  if (infoPagina) {
+    infoPagina.textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+  }
+  
+  if (btnPaginaAnterior) {
+    btnPaginaAnterior.disabled = paginaAtual === 1;
+  }
+  
+  if (btnProximaPagina) {
+    btnProximaPagina.disabled = paginaAtual === totalPaginas;
+  }
+}
+
+// Event listeners para paginação
+itensPorPaginaSelect?.addEventListener('change', (e) => {
+  itensPorPagina = parseInt(e.target.value);
+  paginaAtual = 1;
+  renderizarPagina();
+});
+
+btnPaginaAnterior?.addEventListener('click', () => {
+  if (paginaAtual > 1) {
+    paginaAtual--;
+    renderizarPagina();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+
+btnProximaPagina?.addEventListener('click', () => {
+  const totalPaginas = Math.ceil(todasFotos.length / itensPorPagina);
+  if (paginaAtual < totalPaginas) {
+    paginaAtual++;
+    renderizarPagina();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
 
 window.votar = async (fotoId) => {
   // Verificar se aceitou os termos
