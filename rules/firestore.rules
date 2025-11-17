@@ -11,6 +11,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    
+    match /backups_votos/{backupId} {
+      allow read, write, delete: if isAdmin();
+    }
 
     match /fotos_natal/{fotoId} {
       allow read: if true;
