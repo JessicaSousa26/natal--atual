@@ -23,6 +23,18 @@
       background-color:#fff;
     }
     .twinkle { box-shadow: 0 0 0 2px rgba(255,255,255,.1), 0 0 24px rgba(220,38,38,.25) inset; }
+    
+    /* Efeito de zoom nas imagens da galeria */
+    .zoom-container {
+      overflow: hidden;
+      border-radius: 0.75rem;
+    }
+    .zoom-image {
+      transition: transform 0.3s ease-in-out;
+    }
+    .zoom-container:hover .zoom-image {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-red-50 via-white to-emerald-50 min-h-screen relative overflow-x-hidden">
@@ -172,10 +184,10 @@
           <div>
             <h4 class="font-bold text-emerald-700 text-lg mb-2">4. Cronograma</h4>
             <ul class="list-disc list-inside space-y-1 text-slate-700">
-              <li><strong>Início do cadastro das fotos:</strong> 17 de novembro de 2025 (domingo), a partir de 09h00</li>
-              <li><strong>Encerramento da votação:</strong> 21 de dezembro de 2025, às 23h59</li>
-              <li><strong>Divulgação dos vencedores e entrega das premiações:</strong> 22 de dezembro de 2025</li>
-              <li><strong>Retirada das decorações:</strong> responsabilidade de cada morador; sugere-se até o dia 10 de janeiro de 2026</li>
+              <li><strong>Início do cadastro das fotos:</strong> 17 de novembro de 2025 (segunda-feira), a partir de 09h00</li>
+              <li><strong>Encerramento da votação:</strong> 21 de dezembro de 2025 (sexta-feira) às 23h59</li>
+              <li><strong>Divulgação dos vencedores e entrega das premiações:</strong> 22 de dezembro de 2025 (sábado)</li>
+              <li><strong>Retirada das decorações:</strong> responsabilidade de cada morador; sugere-se até o dia 10 de janeiro de 2026 (sábado)</li>
             </ul>
           </div>
 

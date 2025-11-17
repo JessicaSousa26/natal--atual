@@ -205,7 +205,9 @@ async function carregarFotos() {
     const d = doc.data();
     galeria.innerHTML += `
       <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
-        <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200 group-hover:border-emerald-400 transition-all" alt="Decoração Natalina"/>
+        <div class="zoom-container">
+          <img src="${d.urlFoto}" class="zoom-image w-full aspect-[3/4] object-cover rounded-lg border-2 border-slate-200 group-hover:border-emerald-400 transition-all" alt="Decoração Natalina"/>
+        </div>
         <button class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${doc.id}')">
           ⭐ Votar nesta decoração
         </button>
