@@ -191,9 +191,12 @@ auth.onAuthStateChanged(async u => {
     loginBtn?.classList.add('hidden');
     logoutBtn?.classList.remove('hidden');
     await verificarEnvioUsuario(); // Verifica se já enviou foto
+    await verificarSeJaVotou(); // Verifica se já votou
     carregarFotos();
   } else {
     isAdmin = false;
+    usuarioJaVotou = false;
+    fotoVotadaPeloUsuario = null;
     if (userInfo) userInfo.textContent = '';
     loginBtn?.classList.remove('hidden');
     logoutBtn?.classList.add('hidden');
@@ -296,6 +299,31 @@ btnProximaPagina?.addEventListener('click', () => {
   }
 });
 
+// Variável global para controlar se o usuário já votou
+let usuarioJaVotou = false;
+let fotoVotadaPeloUsuario = null;
+
+// Verificar se usuário já votou ao carregar
+async function verificarSeJaVotou() {
+  if (!currentUser) return;
+  
+  try {
+    const todasFotos = await db.collection('fotos_natal').get();
+    
+    for (const doc of todasFotos.docs) {
+      const voterDoc = await doc.ref.collection('voters').doc(currentUser.uid).get();
+      if (voterDoc.exists) {
+        usuarioJaVotou = true;
+        fotoVotadaPeloUsuario = doc.data();
+        console.log('Usuário já votou:', fotoVotadaPeloUsuario);
+        break;
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao verificar voto:', error);
+  }
+}
+
 window.votar = async (fotoId) => {
   // Verificar se aceitou os termos
   if (!termosAceitos) {
@@ -310,29 +338,16 @@ window.votar = async (fotoId) => {
     return;
   }
   
+  // Verificar se já votou (frontend)
+  if (usuarioJaVotou) {
+    alert('Você já votou em uma foto! Não é permitido uma nova votação!!');
+    return;
+  }
+  
   const fotoRef = db.collection('fotos_natal').doc(fotoId);
   const voterRef = fotoRef.collection('voters').doc(currentUser.uid);
 
   try {
-    // Verificar se o usuário já votou em QUALQUER foto
-    const todasFotos = await db.collection('fotos_natal').get();
-    let jaVotou = false;
-    let fotoVotada = null;
-    
-    for (const doc of todasFotos.docs) {
-      const voterDoc = await doc.ref.collection('voters').doc(currentUser.uid).get();
-      if (voterDoc.exists) {
-        jaVotou = true;
-        fotoVotada = doc.data();
-        break;
-      }
-    }
-    
-    if (jaVotou) {
-      alert(`❌ Você já votou!\n\nVocê pode votar apenas 1 vez.\n\nSeu voto foi para: ${fotoVotada.andar}º andar - Apto ${fotoVotada.apartamento}`);
-      return;
-    }
-    
     await db.runTransaction(async (tx) => {
       const [fotoSnap, voterSnap] = await Promise.all([tx.get(fotoRef), tx.get(voterRef)]);
       if (!fotoSnap.exists) throw new Error('Foto não encontrada');
@@ -345,13 +360,18 @@ window.votar = async (fotoId) => {
       if (agora > fim) throw new Error('A votação já encerrou.');
 
       if (voterSnap.exists) throw new Error('Você já votou nesta foto.');
+      
       tx.set(voterRef, { uid: currentUser.uid, votedAt: agora });
       const votosAtuais = fotoSnap.data().votos || 0;
       tx.update(fotoRef, { votos: votosAtuais + 1 });
     });
 
+    // Marcar que o usuário já votou
+    usuarioJaVotou = true;
+    fotoVotadaPeloUsuario = (await fotoRef.get()).data();
+    
     // Mostrar mensagem de sucesso
-    alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄\n\nVocê não poderá votar novamente.');
+    alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄');
   } catch (e) {
     alert(e.message);
   }
