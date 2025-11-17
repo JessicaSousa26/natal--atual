@@ -192,7 +192,7 @@ auth.onAuthStateChanged(async u => {
     logoutBtn?.classList.remove('hidden');
     await verificarEnvioUsuario(); // Verifica se já enviou foto
     await verificarSeJaVotou(); // Verifica se já votou
-    carregarFotos();
+    await carregarFotos(); // Carregar fotos após verificar voto
   } else {
     isAdmin = false;
     usuarioJaVotou = false;
@@ -201,7 +201,7 @@ auth.onAuthStateChanged(async u => {
     loginBtn?.classList.remove('hidden');
     logoutBtn?.classList.add('hidden');
     if (formUpload) formUpload.reset();
-    carregarFotos();
+    await carregarFotos();
   }
 });
 
@@ -236,6 +236,8 @@ async function carregarFotos() {
 function renderizarPagina() {
   if (!galeria) return;
   
+  console.log('Renderizando página - usuarioJaVotou:', usuarioJaVotou);
+  
   const inicio = (paginaAtual - 1) * itensPorPagina;
   const fim = inicio + itensPorPagina;
   const fotosPagina = todasFotos.slice(inicio, fim);
@@ -251,6 +253,8 @@ function renderizarPagina() {
       ? 'bg-gray-400 cursor-not-allowed opacity-60' 
       : 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 transform hover:scale-105';
     const textoBotao = usuarioJaVotou ? '🔒 Votação encerrada para você' : '⭐ Votar nesta decoração';
+    
+    console.log(`Foto ${foto.id} - Botão ${usuarioJaVotou ? 'DESABILITADO' : 'HABILITADO'}`);
     
     galeria.innerHTML += `
       <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
@@ -313,7 +317,12 @@ let fotoVotadaPeloUsuario = null;
 
 // Verificar se usuário já votou ao carregar
 async function verificarSeJaVotou() {
-  if (!currentUser) return;
+  if (!currentUser) {
+    console.log('Nenhum usuário logado');
+    return;
+  }
+  
+  console.log('Verificando se usuário já votou...');
   
   try {
     const todasFotos = await db.collection('fotos_natal').get();
@@ -323,10 +332,13 @@ async function verificarSeJaVotou() {
       if (voterDoc.exists) {
         usuarioJaVotou = true;
         fotoVotadaPeloUsuario = doc.data();
-        console.log('Usuário já votou:', fotoVotadaPeloUsuario);
-        break;
+        console.log('✅ Usuário já votou! Bloqueando botões...', fotoVotadaPeloUsuario);
+        return;
       }
     }
+    
+    console.log('✅ Usuário ainda não votou');
+    usuarioJaVotou = false;
   } catch (error) {
     console.error('Erro ao verificar voto:', error);
   }
