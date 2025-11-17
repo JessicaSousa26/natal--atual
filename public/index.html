@@ -96,7 +96,7 @@
             <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-1">Seg</div>
           </div>
         </div>
-        <p class="text-white/90 text-sm mt-4" id="contadorMensagem">Votação inicia em 18/11/2025 às 09h00</p>
+        <p class="text-white/90 text-sm mt-4" id="contadorMensagem">Votação inicia em 17/11/2025 às 09h00</p>
       </div>
     </div>
   </section>
@@ -172,7 +172,7 @@
           <div>
             <h4 class="font-bold text-emerald-700 text-lg mb-2">4. Cronograma</h4>
             <ul class="list-disc list-inside space-y-1 text-slate-700">
-              <li><strong>Início do cadastro das fotos:</strong> 18 de novembro de 2025 (segunda-feira), a partir de 09h00</li>
+              <li><strong>Início do cadastro das fotos:</strong> 17 de novembro de 2025 (domingo), a partir de 09h00</li>
               <li><strong>Encerramento da votação:</strong> 21 de dezembro de 2025, às 23h59</li>
               <li><strong>Divulgação dos vencedores e entrega das premiações:</strong> 22 de dezembro de 2025</li>
               <li><strong>Retirada das decorações:</strong> responsabilidade de cada morador; sugere-se até o dia 10 de janeiro de 2026</li>
@@ -597,8 +597,8 @@
       const tituloEl = document.getElementById('contadorTitulo');
       const mensagemEl = document.getElementById('contadorMensagem');
       
-      // Data de início: 18/11/2025 às 09:00
-      const dataInicio = new Date('2025-11-18T09:00:00-03:00').getTime();
+      // Data de início: 17/11/2025 às 09:00
+      const dataInicio = new Date('2025-11-17T09:00:00-03:00').getTime();
       // Data de fim: 21/12/2025 às 23:59
       const dataFim = new Date('2025-12-21T23:59:59-03:00').getTime();
       
@@ -609,7 +609,7 @@
         if (agora < dataInicio) {
           const diferenca = dataInicio - agora;
           tituloEl.textContent = '⏰ Votação inicia em:';
-          mensagemEl.textContent = 'Votação começa em 18/11/2025 às 09h00';
+          mensagemEl.textContent = 'Votação começa em 17/11/2025 às 09h00';
           atualizarDisplay(diferenca);
         }
         // Se durante a votação
