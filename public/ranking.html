@@ -181,11 +181,11 @@
       if (panel) {
         panel.classList.remove('hidden');
         console.log('Admin panel shown');
-        // Setup dos botões administrativos
-        setTimeout(() => setupAdminButtons(), 100);
       } else {
         console.error('Admin panel not found!');
       }
+      // Setup dos botões administrativos imediatamente
+      setupAdminButtons();
       return true;
     }
     
@@ -451,11 +451,6 @@
           }
         });
       }
-    }
-    
-    // Chama setup dos botões após carregar a página
-    if (isAdmin) {
-      setupAdminButtons();
     }
     
     // ===== FUNÇÃO DELETAR FOTO (para todos verem o botão X) =====
