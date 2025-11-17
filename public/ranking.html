@@ -160,8 +160,14 @@
     function checkAdminAccess(user) {
       console.log('Checking admin access for:', user?.email);
       if (!user) {
-        accessModal?.classList.remove('hidden');
-        document.getElementById('ranking').innerHTML = '';
+        document.getElementById('adminPanel')?.classList.add('hidden');
+        document.getElementById('ranking').innerHTML = `
+          <div class="p-6 text-center text-slate-600">
+            <p class="text-lg font-semibold">🔒 Acesso Restrito</p>
+            <p class="text-sm mt-2">Faça login para acessar o ranking.</p>
+          </div>
+        `;
+        loginBtn?.classList.remove('hidden');
         return false;
       }
       
@@ -169,19 +175,21 @@
       console.log('Is admin?', isAdmin, 'Email:', user.email);
       
       if (!isAdmin) {
-        accessModal?.classList.remove('hidden');
+        document.getElementById('adminPanel')?.classList.add('hidden');
         document.getElementById('ranking').innerHTML = `
-          <div class="p-6 text-center text-red-600">
+          <div class="p-6 text-center text-red-600 bg-red-50 rounded-lg">
+            <p class="text-2xl mb-2">🚫</p>
             <p class="text-lg font-semibold">Acesso Negado</p>
-            <p class="text-sm mt-2">Você não tem permissão para acessar esta página.</p>
+            <p class="text-sm mt-2">Esta página é restrita apenas para administradores.</p>
+            <p class="text-xs mt-4 text-slate-600">Conectado como: ${user.email}</p>
           </div>
         `;
         if (adminInfo) adminInfo.textContent = user.email;
         logoutBtn?.classList.remove('hidden');
+        loginBtn?.classList.add('hidden');
         return false;
       }
       
-      accessModal?.classList.add('hidden');
       if (adminInfo) adminInfo.textContent = `Admin: ${user.displayName || user.email}`;
       logoutBtn?.classList.remove('hidden');
       const panel = document.getElementById('adminPanel');
