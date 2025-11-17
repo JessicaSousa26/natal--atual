@@ -2,10 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Função auxiliar para verificar se é admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'jhessymary26@gmail.com';
+    }
+
     match /settings/votacao {
       allow read: if true;
-      // Em produção, limite a admins:
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     match /fotos_natal/{fotoId} {
@@ -17,12 +21,16 @@ service cloud.firestore {
         && request.resource.data.urlFoto is string
         && request.resource.data.votos == 0;
 
-      allow update: if request.auth != null
+      // Permite admin deletar ou atualizar qualquer foto
+      allow delete: if isAdmin();
+      
+      allow update: if isAdmin()
+        || (request.auth != null
         && request.resource.data.diff(resource.data).changedKeys().hasOnly(['votos'])
         && request.resource.data.votos == resource.data.votos + 1
         && request.time >= get(/databases/$(database)/documents/settings/votacao).data.inicio
         && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim
-        && existsAfter(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(request.auth.uid));
+        && existsAfter(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(request.auth.uid)));
 
       match /voters/{uid} {
         allow read: if request.auth != null && request.auth.uid == uid;
@@ -30,7 +38,8 @@ service cloud.firestore {
           && !exists(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(uid))
           && request.time >= get(/databases/$(database)/documents/settings/votacao).data.inicio
           && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim;
-        allow update, delete: if false;
+        // Permite admin deletar voters (necessário para zerar votos)
+        allow delete: if isAdmin();
       }
     }
   }
