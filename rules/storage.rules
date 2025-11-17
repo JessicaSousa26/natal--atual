@@ -9,9 +9,8 @@ service firebase.storage {
         && (request.resource.contentType.matches('image/.*'))
         && request.resource.size < 10 * 1024 * 1024;
       
-      // Permite admin deletar qualquer imagem
-      allow delete: if request.auth != null 
-        && request.auth.token.email == 'jhessymary26@gmail.com';
+      // Permite qualquer usuário autenticado deletar (temporário para teste)
+      allow delete: if request.auth != null;
     }
   }
 }

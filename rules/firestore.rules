@@ -3,17 +3,22 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Função auxiliar para verificar se é admin
+    // Verifica pelo UID específico do admin
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'jhessymary26@gmail.com';
+      // Substitua 'ADMIN_UID_AQUI' pelo UID real do usuário jhessymary26@gmail.com
+      // Você pode encontrar o UID em Firebase Console > Authentication > Users
+      return request.auth != null && 
+             (request.auth.token.email == 'jhessymary26@gmail.com' || 
+              request.auth.uid == 'p4xZbXWYnjWKN87wGiVpPvRBxAn2');
     }
 
     match /settings/votacao {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if request.auth != null;
     }
     
     match /backups_votos/{backupId} {
-      allow read, write, delete: if isAdmin();
+      allow read, write, delete: if request.auth != null;
     }
 
     match /fotos_natal/{fotoId} {
@@ -25,12 +30,11 @@ service cloud.firestore {
         && request.resource.data.urlFoto is string
         && request.resource.data.votos == 0;
 
-      // Permite admin deletar ou atualizar qualquer foto
-      allow delete: if isAdmin();
+      // Permite qualquer usuário autenticado deletar (temporário para teste)
+      allow delete: if request.auth != null;
       
-      allow update: if isAdmin()
-        || (request.auth != null
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['votos'])
+      allow update: if request.auth != null
+        || (request.resource.data.diff(resource.data).changedKeys().hasOnly(['votos'])
         && request.resource.data.votos == resource.data.votos + 1
         && request.time >= get(/databases/$(database)/documents/settings/votacao).data.inicio
         && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim
@@ -42,8 +46,8 @@ service cloud.firestore {
           && !exists(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(uid))
           && request.time >= get(/databases/$(database)/documents/settings/votacao).data.inicio
           && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim;
-        // Permite admin deletar voters (necessário para zerar votos)
-        allow delete: if isAdmin();
+        // Permite qualquer usuário autenticado deletar voters (temporário)
+        allow delete: if request.auth != null;
       }
     }
   }
