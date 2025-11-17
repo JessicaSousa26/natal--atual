@@ -358,9 +358,8 @@ window.votar = async (fotoId) => {
     return;
   }
   
-  // Verificar se já votou (frontend)
+  // Verificar se já votou (frontend) - sem alert, apenas bloquear
   if (usuarioJaVotou) {
-    alert('Você já votou em uma foto! Não é permitido uma nova votação!!');
     return;
   }
   
