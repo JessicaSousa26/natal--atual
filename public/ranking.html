@@ -12,6 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .twinkle { box-shadow: 0 0 0 2px rgba(255,255,255,.1), 0 0 24px rgba(16,185,129,.25) inset; }
@@ -532,6 +533,10 @@
     
     // ===== FUNÇÃO DELETAR FOTO (para todos verem o botão X) =====
     window.deletarFoto = async (fotoId) => {
+      console.log('deletarFoto chamada para:', fotoId);
+      console.log('isAdmin:', isAdmin);
+      console.log('User atual:', auth.currentUser?.email);
+      
       if (!isAdmin) {
         alert('❌ Apenas administradores podem deletar fotos.');
         return;
@@ -542,23 +547,56 @@
       }
       
       try {
+        console.log('Buscando foto:', fotoId);
         const fotoRef = db.collection('fotos_natal').doc(fotoId);
+        const fotoDoc = await fotoRef.get();
+        
+        if (!fotoDoc.exists) {
+          alert('❌ Foto não encontrada!');
+          return;
+        }
+        
+        const fotoData = fotoDoc.data();
+        console.log('Foto encontrada:', fotoData);
+        
+        // Deletar imagem do Storage
+        if (fotoData.urlFoto) {
+          try {
+            console.log('Deletando imagem do Storage:', fotoData.urlFoto);
+            const storage = firebase.storage();
+            const imageRef = storage.refFromURL(fotoData.urlFoto);
+            await imageRef.delete();
+            console.log('Imagem deletada do Storage');
+          } catch (storageError) {
+            console.error('Erro ao deletar do Storage:', storageError);
+            // Continua mesmo se falhar (imagem pode já ter sido deletada)
+          }
+        }
         
         // Deletar subcoleção de voters
+        console.log('Deletando voters...');
         const votersSnap = await fotoRef.collection('voters').get();
         const batch = db.batch();
-        votersSnap.docs.forEach(doc => batch.delete(doc.ref));
+        votersSnap.docs.forEach(doc => {
+          console.log('Deletando voter:', doc.id);
+          batch.delete(doc.ref);
+        });
         
         // Deletar o documento da foto
+        console.log('Deletando documento da foto...');
         batch.delete(fotoRef);
         
+        console.log('Executando batch commit...');
         await batch.commit();
+        console.log('Batch commit executado com sucesso!');
         
         alert('✅ Foto deletada com sucesso!');
         await carregarRanking();
       } catch (error) {
-        console.error('Erro ao deletar foto:', error);
-        alert('❌ Erro ao deletar foto: ' + error.message);
+        console.error('Erro detalhado ao deletar foto:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        alert('❌ Erro ao deletar foto: ' + error.message + '\n\nCódigo: ' + error.code);
       }
     };
     
