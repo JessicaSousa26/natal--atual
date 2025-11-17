@@ -244,13 +244,21 @@ function renderizarPagina() {
   
   fotosPagina.forEach(foto => {
     const d = foto.data;
+    
+    // Verificar se o usuário já votou para desabilitar o botão
+    const botaoDesabilitado = usuarioJaVotou ? 'disabled' : '';
+    const estiloDesabilitado = usuarioJaVotou 
+      ? 'bg-gray-400 cursor-not-allowed opacity-60' 
+      : 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 transform hover:scale-105';
+    const textoBotao = usuarioJaVotou ? '🔒 Votação encerrada para você' : '⭐ Votar nesta decoração';
+    
     galeria.innerHTML += `
       <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
         <div class="zoom-container border-2 border-slate-200 group-hover:border-emerald-400">
           <img src="${d.urlFoto}" class="w-full aspect-[3/4] object-cover" alt="Decoração Natalina"/>
         </div>
-        <button class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-105" onclick="votar('${foto.id}')">
-          ⭐ Votar nesta decoração
+        <button ${botaoDesabilitado} class="w-full px-4 py-3 rounded-lg ${estiloDesabilitado} text-white font-bold shadow-md hover:shadow-lg transition-all" onclick="votar('${foto.id}')">
+          ${textoBotao}
         </button>
       </article>
     `;
@@ -369,6 +377,9 @@ window.votar = async (fotoId) => {
     // Marcar que o usuário já votou
     usuarioJaVotou = true;
     fotoVotadaPeloUsuario = (await fotoRef.get()).data();
+    
+    // Re-renderizar a página para desabilitar todos os botões
+    renderizarPagina();
     
     // Mostrar mensagem de sucesso
     alert('✅ Voto computado com sucesso! Obrigado por participar! 🎄');
