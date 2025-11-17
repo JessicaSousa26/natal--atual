@@ -63,6 +63,9 @@
         <button id="btnRestaurarVotos" class="px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all flex items-center justify-center gap-2">
           ♻️ Restaurar Votos
         </button>
+        <button id="btnDeletarTodasFotos" class="px-4 py-3 rounded-lg bg-red-900 hover:bg-red-950 text-white font-medium transition-all flex items-center justify-center gap-2">
+          🔥 Deletar Todas as Fotos
+        </button>
         <button id="btnGerarPDF" class="px-4 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all flex items-center justify-center gap-2">
           📄 Gerar PDF do Ranking
         </button>
@@ -403,6 +406,8 @@
       if (btnRestaurar) {
         btnRestaurar.addEventListener('click', async () => {
           try {
+            showAdminMsg('🔄 Buscando backup...');
+            
             // Buscar o backup mais recente
             const backupsSnap = await db.collection('backups_votos')
               .orderBy('timestamp', 'desc')
@@ -417,30 +422,37 @@
             const backup = backupsSnap.docs[0].data();
             const dataBackup = backup.timestamp.toDate().toLocaleString('pt-BR');
             
-            if (!confirm(`🔄 Deseja restaurar o backup de ${dataBackup}?\n\nIsso irá sobrescrever os votos atuais!`)) return;
+            if (!confirm(`🔄 Deseja restaurar o backup de ${dataBackup}?\n\nTotal: ${backup.fotos.length} fotos\n\nIsso irá sobrescrever os votos atuais!`)) return;
             
-            const batch = db.batch();
+            showAdminMsg('♻️ Restaurando votos...');
+            
             let fotosRestauradas = 0;
             let votosRestaurados = 0;
             
+            // Processar em lotes para evitar limite de 500 operações
             for (const fotoBackup of backup.fotos) {
               const fotoRef = db.collection('fotos_natal').doc(fotoBackup.fotoId);
               
+              // Verificar se a foto ainda existe
+              const fotoDoc = await fotoRef.get();
+              if (!fotoDoc.exists) {
+                console.log(`Foto ${fotoBackup.fotoId} não existe mais, pulando...`);
+                continue;
+              }
+              
               // Restaurar contagem de votos
-              batch.update(fotoRef, { votos: fotoBackup.votos });
+              await fotoRef.update({ votos: fotoBackup.votos });
               fotosRestauradas++;
               
-              // Restaurar voters
+              // Restaurar voters individualmente
               for (const voter of fotoBackup.voters) {
                 const voterRef = fotoRef.collection('voters').doc(voter.uid);
-                batch.set(voterRef, { 
+                await voterRef.set({ 
                   votedAt: voter.votedAt || firebase.firestore.Timestamp.now() 
                 });
                 votosRestaurados++;
               }
             }
-            
-            await batch.commit();
             
             // Deletar o backup usado
             await backupsSnap.docs[0].ref.delete();
@@ -448,7 +460,64 @@
             showAdminMsg(`✅ ${fotosRestauradas} fotos e ${votosRestaurados} votos restaurados!`);
             await carregarRanking();
           } catch (error) {
+            console.error('Erro ao restaurar:', error);
             showAdminMsg('❌ Erro ao restaurar votos: ' + error.message, true);
+          }
+        });
+      }
+      
+      // Deletar Todas as Fotos
+      const btnDeletarTodas = document.getElementById('btnDeletarTodasFotos');
+      console.log('Button deletar todas found:', !!btnDeletarTodas);
+      if (btnDeletarTodas) {
+        btnDeletarTodas.addEventListener('click', async () => {
+          if (!confirm('🔥 ⚠️ ATENÇÃO EXTREMA! ⚠️\n\nIsso irá DELETAR PERMANENTEMENTE:\n- TODAS as fotos\n- TODOS os votos\n- TODAS as imagens do Storage\n\nEsta ação NÃO PODE SER DESFEITA!\n\nDeseja continuar?')) return;
+          if (!confirm('⚠️ ÚLTIMA CONFIRMAÇÃO!\n\nTem ABSOLUTA CERTEZA?\n\nDigite "SIM" mentalmente e clique OK para continuar.')) return;
+          
+          try {
+            showAdminMsg('🔥 Deletando todas as fotos...');
+            
+            const storage = firebase.storage();
+            const fotosSnap = await db.collection('fotos_natal').get();
+            let deletadas = 0;
+            let erros = 0;
+            
+            for (const doc of fotosSnap.docs) {
+              try {
+                const fotoData = doc.data();
+                
+                // Deletar imagem do Storage
+                if (fotoData.urlFoto) {
+                  try {
+                    const imageRef = storage.refFromURL(fotoData.urlFoto);
+                    await imageRef.delete();
+                  } catch (storageError) {
+                    console.error('Erro ao deletar imagem do Storage:', storageError);
+                  }
+                }
+                
+                // Deletar subcoleção de voters
+                const votersSnap = await doc.ref.collection('voters').get();
+                for (const voterDoc of votersSnap.docs) {
+                  await voterDoc.ref.delete();
+                }
+                
+                // Deletar documento da foto
+                await doc.ref.delete();
+                
+                deletadas++;
+                showAdminMsg(`🔥 Deletando... ${deletadas}/${fotosSnap.size}`);
+              } catch (error) {
+                console.error('Erro ao deletar foto:', doc.id, error);
+                erros++;
+              }
+            }
+            
+            showAdminMsg(`✅ ${deletadas} fotos deletadas! ${erros > 0 ? `(${erros} erros)` : ''}`);
+            await carregarRanking();
+          } catch (error) {
+            console.error('Erro ao deletar todas:', error);
+            showAdminMsg('❌ Erro ao deletar fotos: ' + error.message, true);
           }
         });
       }
