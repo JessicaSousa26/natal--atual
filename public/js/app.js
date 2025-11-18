@@ -358,6 +358,14 @@ window.votar = async (fotoId) => {
     return;
   }
   
+  // Verificar se a votação já está liberada (15/12/2025 10:00)
+  const agora = new Date();
+  const dataLiberacaoVotacao = new Date('2025-12-15T10:00:00-03:00');
+  if (agora < dataLiberacaoVotacao) {
+    alert('A votação será liberada em 15/12/2025 às 10h00.');
+    return;
+  }
+  
   // Verificar se já votou (frontend) - sem alert, apenas bloquear
   if (usuarioJaVotou) {
     return;
