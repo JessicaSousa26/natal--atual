@@ -328,15 +328,21 @@
       console.log('Button iniciar found:', !!btnIniciar);
       if (btnIniciar) {
         btnIniciar.addEventListener('click', async () => {
-          if (!confirm('Deseja iniciar a votação agora?')) return;
+          if (!confirm('Deseja iniciar a votação agora? Será configurado para iniciar em 18/11/2025 às 14:00 e encerrar em 21/12/2025 às 23:59.')) return;
           try {
-            const agora = firebase.firestore.Timestamp.now();
-            const fimPadrao = firebase.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // +30 dias
+            // Data de início: 18/11/2025 às 14:00
+            const dataInicio = new Date('2025-11-18T14:00:00-03:00');
+            // Data de fim: 21/12/2025 às 23:59
+            const dataFim = new Date('2025-12-21T23:59:59-03:00');
+            
+            const inicioTimestamp = firebase.firestore.Timestamp.fromDate(dataInicio);
+            const fimTimestamp = firebase.firestore.Timestamp.fromDate(dataFim);
+            
             await db.collection('settings').doc('votacao').set({
-              inicio: agora,
-              fim: fimPadrao
+              inicio: inicioTimestamp,
+              fim: fimTimestamp
             });
-            showAdminMsg('✅ Votação iniciada com sucesso!');
+            showAdminMsg('✅ Votação configurada! Início: 18/11/2025 14:00 | Fim: 21/12/2025 23:59');
           } catch (error) {
             showAdminMsg('❌ Erro ao iniciar votação: ' + error.message, true);
           }
