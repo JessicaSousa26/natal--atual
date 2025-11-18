@@ -460,11 +460,22 @@
                 continue;
               }
               
-              // Restaurar contagem de votos
-              await fotoRef.update({ votos: fotoBackup.votos });
+              // Pegar dados atuais da foto
+              const fotoData = fotoDoc.data();
+              
+              // Restaurar contagem de votos mantendo outros dados
+              await fotoRef.set({ 
+                ...fotoData,
+                votos: fotoBackup.votos 
+              }, { merge: true });
               fotosRestauradas++;
               
-              // Restaurar voters individualmente
+              // Limpar voters existentes primeiro
+              const votersSnap = await fotoRef.collection('voters').get();
+              const deletePromises = votersSnap.docs.map(doc => doc.ref.delete());
+              await Promise.all(deletePromises);
+              
+              // Restaurar voters do backup
               for (const voter of fotoBackup.voters) {
                 const voterRef = fotoRef.collection('voters').doc(voter.uid);
                 await voterRef.set({ 
