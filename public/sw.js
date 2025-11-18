@@ -1,5 +1,5 @@
 /* sw.js — PWA cache (static assets + HTML fallback) */
-const VERSION = 'torre4-v1.4.0';
+const VERSION = 'torre4-v1.5.2';
 const STATIC_CACHE = `static-${VERSION}`;
 
 const CORE_ASSETS = [

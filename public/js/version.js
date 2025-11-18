@@ -1,5 +1,5 @@
 // Versão da aplicação - incrementar para forçar atualização
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 
 // Sistema automático de atualização de cache
 (function() {
@@ -25,9 +25,9 @@ const APP_VERSION = '1.5.2';
       });
     }
     
-    // Forçar reload completo
+    // Forçar reload completo e limpar tudo
     setTimeout(() => {
-      window.location.reload(true);
+      window.location.href = window.location.href.split('?')[0] + '?v=' + APP_VERSION;
     }, 100);
   } else if (!STORED_VERSION) {
     localStorage.setItem('app_version', APP_VERSION);
