@@ -332,10 +332,10 @@
       console.log('Button iniciar found:', !!btnIniciar);
       if (btnIniciar) {
         btnIniciar.addEventListener('click', async () => {
-          if (!confirm('Deseja iniciar a votação agora? Será configurado para iniciar em 18/11/2025 às 14:00 e encerrar em 21/12/2025 às 23:59.')) return;
+          if (!confirm('Deseja iniciar a votação agora? Será configurado para iniciar em 18/11/2025 às 16:00 e encerrar em 21/12/2025 às 23:59.')) return;
           try {
-            // Data de início: 18/11/2025 às 14:00
-            const dataInicio = new Date('2025-11-18T14:00:00-03:00');
+            // Data de início: 18/11/2025 às 16:00
+            const dataInicio = new Date('2025-11-18T16:00:00-03:00');
             // Data de fim: 21/12/2025 às 23:59
             const dataFim = new Date('2025-12-21T23:59:59-03:00');
             
@@ -346,7 +346,7 @@
               inicio: inicioTimestamp,
               fim: fimTimestamp
             });
-            showAdminMsg('✅ Votação configurada! Início: 18/11/2025 14:00 | Fim: 21/12/2025 23:59');
+            showAdminMsg('✅ Votação configurada! Início: 18/11/2025 16:00 | Fim: 21/12/2025 23:59');
           } catch (error) {
             showAdminMsg('❌ Erro ao iniciar votação: ' + error.message, true);
           }
