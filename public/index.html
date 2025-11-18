@@ -349,7 +349,6 @@
             <div class="hidden flex-col items-center justify-center text-center">
               <div class="text-4xl mb-2">⚡</div>
               <div class="font-bold text-slate-700">Wagner</div>
-              <div class="text-xs text-slate-500">Elétrica</div>
             </div>
           </a>
         </div>
@@ -691,8 +690,8 @@
       
       // Data de início: 18/11/2025 às 16:00
       const dataInicio = new Date('2025-11-18T16:00:00-03:00').getTime();
-      // Data de fim: 21/12/2025 às 23:59
-      const dataFim = new Date('2025-12-21T23:59:59-03:00').getTime();
+      // Data de fim de postagens: 14/12/2025 às 23:59
+      const dataFim = new Date('2025-12-14T23:59:59-03:00').getTime();
       
       function atualizarContador() {
         const agora = new Date().getTime();
@@ -704,11 +703,11 @@
           mensagemEl.textContent = 'Votação começa em 18/11/2025 às 16h00';
           atualizarDisplay(diferenca);
         }
-        // Se durante a votação
+        // Se durante o período de postagens
         else if (agora >= dataInicio && agora <= dataFim) {
           const diferenca = dataFim - agora;
-          tituloEl.textContent = '⏰ Votação encerra em:';
-          mensagemEl.textContent = 'Votação válida até 21/12/2025 às 23h59';
+          tituloEl.textContent = '⏰ Postagem das fotos encerra em:';
+          mensagemEl.textContent = 'Postagem válida até 14/12/2025 às 23h59';
           atualizarDisplay(diferenca);
         }
         // Se após o fim
