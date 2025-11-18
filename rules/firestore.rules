@@ -45,7 +45,8 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(request.auth.uid)));
 
       match /voters/{uid} {
-        allow read: if request.auth != null && request.auth.uid == uid;
+        // Admin pode ler todos os voters, usuários normais só seus próprios
+        allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
         // Admin pode criar voters sem restrições, usuários normais têm validações de período
         allow create: if isAdmin()
           || (request.auth != null && request.auth.uid == uid

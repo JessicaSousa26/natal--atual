@@ -657,11 +657,15 @@
               }
             }
             
-            showAdminMsg(`✅ ${deletadas} fotos deletadas! ${erros > 0 ? `(${erros} erros)` : ''}`);
-            await carregarRanking();
+            if (deletadas > 0) {
+              showAdminMsg(`✅ ${deletadas} fotos deletadas! ${erros > 0 ? `(${erros} erros)` : ''}`);
+              await carregarRanking();
+            } else {
+              showAdminMsg('❌ Nenhuma foto foi deletada. Verifique as permissões.', true);
+            }
           } catch (error) {
             console.error('Erro ao deletar todas:', error);
-            showAdminMsg('❌ Erro ao deletar fotos: ' + error.message, true);
+            showAdminMsg('❌ Erro ao deletar fotos: ' + error.message + ' - Verifique o console para detalhes.', true);
           }
         });
       }

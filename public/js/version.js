@@ -1,5 +1,5 @@
 // Versão da aplicação - incrementar para forçar atualização
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.3';
 
 // Sistema automático de atualização de cache
 (function() {
