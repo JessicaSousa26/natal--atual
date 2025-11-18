@@ -244,17 +244,30 @@ function renderizarPagina() {
   
   galeria.innerHTML = '';
   
+  // Verificar se a votação já está liberada (15/12/2025 10:00)
+  const agora = new Date();
+  const dataLiberacaoVotacao = new Date('2025-12-15T10:00:00-03:00');
+  const votacaoLiberada = agora >= dataLiberacaoVotacao;
+  
   fotosPagina.forEach(foto => {
     const d = foto.data;
     
-    // Verificar se o usuário já votou para desabilitar o botão
-    const botaoDesabilitado = usuarioJaVotou ? 'disabled' : '';
-    const estiloDesabilitado = usuarioJaVotou 
-      ? 'bg-gray-400 cursor-not-allowed opacity-60' 
-      : 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 transform hover:scale-105';
-    const textoBotao = usuarioJaVotou ? '🔒 Votação encerrada para você' : '⭐ Votar nesta decoração';
+    // Verificar se o usuário já votou OU se a votação ainda não foi liberada
+    const botaoDesabilitado = (usuarioJaVotou || !votacaoLiberada) ? 'disabled' : '';
     
-    console.log(`Foto ${foto.id} - Botão ${usuarioJaVotou ? 'DESABILITADO' : 'HABILITADO'}`);
+    let estiloDesabilitado, textoBotao;
+    if (!votacaoLiberada) {
+      estiloDesabilitado = 'bg-amber-400 cursor-not-allowed opacity-70';
+      textoBotao = '🔒 Votação liberada em 15/12/2025 às 10h00';
+    } else if (usuarioJaVotou) {
+      estiloDesabilitado = 'bg-gray-400 cursor-not-allowed opacity-60';
+      textoBotao = '🔒 Votação encerrada para você';
+    } else {
+      estiloDesabilitado = 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 transform hover:scale-105';
+      textoBotao = '⭐ Votar nesta decoração';
+    }
+    
+    console.log(`Foto ${foto.id} - Votação liberada: ${votacaoLiberada}, Botão ${(usuarioJaVotou || !votacaoLiberada) ? 'DESABILITADO' : 'HABILITADO'}`);
     
     galeria.innerHTML += `
       <article class="xmas-card rounded-2xl shadow-lg p-4 flex flex-col gap-3 border-2 border-emerald-100 hover:border-emerald-300 transition-all group">
