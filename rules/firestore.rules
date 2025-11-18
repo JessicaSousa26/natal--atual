@@ -24,11 +24,13 @@ service cloud.firestore {
     match /fotos_natal/{fotoId} {
       allow read: if true;
 
-      allow create: if request.auth != null
+      // Admin pode criar sem restrições, usuários normais têm validações
+      allow create: if isAdmin() 
+        || (request.auth != null
         && request.resource.data.andar is int
         && request.resource.data.apartamento is string
         && request.resource.data.urlFoto is string
-        && request.resource.data.votos == 0;
+        && request.resource.data.votos == 0);
 
       // Apenas admin pode deletar
       allow delete: if isAdmin();
@@ -44,10 +46,12 @@ service cloud.firestore {
 
       match /voters/{uid} {
         allow read: if request.auth != null && request.auth.uid == uid;
-        allow create: if request.auth != null && request.auth.uid == uid
+        // Admin pode criar voters sem restrições, usuários normais têm validações de período
+        allow create: if isAdmin()
+          || (request.auth != null && request.auth.uid == uid
           && !exists(/databases/$(database)/documents/fotos_natal/$(fotoId)/voters/$(uid))
           && request.time >= get(/databases/$(database)/documents/settings/votacao).data.inicio
-          && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim;
+          && request.time <= get(/databases/$(database)/documents/settings/votacao).data.fim);
         // Apenas admin pode deletar voters
         allow delete: if isAdmin();
       }
