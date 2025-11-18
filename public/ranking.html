@@ -63,6 +63,9 @@
         <button id="btnRestaurarVotos" class="px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all flex items-center justify-center gap-2">
           ♻️ Restaurar Votos
         </button>
+        <button id="btnRestaurarFotos" class="px-4 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-all flex items-center justify-center gap-2">
+          🖼️ Restaurar Fotos
+        </button>
         <button id="btnDeletarTodasFotos" class="px-4 py-3 rounded-lg bg-red-900 hover:bg-red-950 text-white font-medium transition-all flex items-center justify-center gap-2">
           🔥 Deletar Todas as Fotos
         </button>
@@ -497,19 +500,128 @@
         });
       }
       
+      // Restaurar Fotos
+      const btnRestaurarFotos = document.getElementById('btnRestaurarFotos');
+      console.log('Button restaurar fotos found:', !!btnRestaurarFotos);
+      if (btnRestaurarFotos) {
+        btnRestaurarFotos.addEventListener('click', async () => {
+          try {
+            showAdminMsg('🔄 Buscando backup de fotos...');
+            
+            // Buscar o backup mais recente
+            const backupsSnap = await db.collection('backups_fotos')
+              .orderBy('timestamp', 'desc')
+              .limit(1)
+              .get();
+            
+            if (backupsSnap.empty) {
+              showAdminMsg('❌ Nenhum backup de fotos encontrado!', true);
+              return;
+            }
+            
+            const backup = backupsSnap.docs[0].data();
+            const dataBackup = backup.timestamp.toDate().toLocaleString('pt-BR');
+            
+            if (!confirm(`🔄 Deseja restaurar o backup de ${dataBackup}?\n\nTotal: ${backup.fotos.length} fotos\n\nIsso irá adicionar as fotos deletadas de volta!`)) return;
+            
+            showAdminMsg('♻️ Restaurando fotos...');
+            
+            const storage = firebase.storage();
+            let fotosRestauradas = 0;
+            
+            // Restaurar cada foto
+            for (const fotoBackup of backup.fotos) {
+              try {
+                // Verificar se a foto já existe
+                const fotoDoc = await db.collection('fotos_natal').doc(fotoBackup.fotoId).get();
+                if (fotoDoc.exists) {
+                  console.log(`Foto ${fotoBackup.fotoId} já existe, pulando...`);
+                  continue;
+                }
+                
+                // Restaurar documento da foto
+                await db.collection('fotos_natal').doc(fotoBackup.fotoId).set({
+                  andar: fotoBackup.andar,
+                  apartamento: fotoBackup.apartamento,
+                  urlFoto: fotoBackup.urlFoto,
+                  uploadedAt: fotoBackup.uploadedAt || firebase.firestore.Timestamp.now(),
+                  userId: fotoBackup.userId,
+                  votos: fotoBackup.votos || 0
+                });
+                
+                // Restaurar voters se existirem
+                if (fotoBackup.voters && fotoBackup.voters.length > 0) {
+                  for (const voter of fotoBackup.voters) {
+                    await db.collection('fotos_natal').doc(fotoBackup.fotoId)
+                      .collection('voters').doc(voter.uid).set({
+                        votedAt: voter.votedAt || firebase.firestore.Timestamp.now()
+                      });
+                  }
+                }
+                
+                fotosRestauradas++;
+                showAdminMsg(`♻️ Restaurando... ${fotosRestauradas}/${backup.fotos.length}`);
+              } catch (error) {
+                console.error('Erro ao restaurar foto:', fotoBackup.fotoId, error);
+              }
+            }
+            
+            // Deletar o backup usado
+            await backupsSnap.docs[0].ref.delete();
+            
+            showAdminMsg(`✅ ${fotosRestauradas} fotos restauradas com sucesso!`);
+            await carregarRanking();
+          } catch (error) {
+            console.error('Erro ao restaurar fotos:', error);
+            showAdminMsg('❌ Erro ao restaurar fotos: ' + error.message, true);
+          }
+        });
+      }
+      
       // Deletar Todas as Fotos
       const btnDeletarTodas = document.getElementById('btnDeletarTodasFotos');
       console.log('Button deletar todas found:', !!btnDeletarTodas);
       if (btnDeletarTodas) {
         btnDeletarTodas.addEventListener('click', async () => {
-          if (!confirm('🔥 ⚠️ ATENÇÃO EXTREMA! ⚠️\n\nIsso irá DELETAR PERMANENTEMENTE:\n- TODAS as fotos\n- TODOS os votos\n- TODAS as imagens do Storage\n\nEsta ação NÃO PODE SER DESFEITA!\n\nDeseja continuar?')) return;
+          if (!confirm('🔥 ⚠️ ATENÇÃO EXTREMA! ⚠️\n\nIsso irá DELETAR PERMANENTEMENTE:\n- TODAS as fotos\n- TODOS os votos\n- TODAS as imagens do Storage\n\nUM BACKUP SERÁ CRIADO ANTES!\n\nDeseja continuar?')) return;
           if (!confirm('⚠️ ÚLTIMA CONFIRMAÇÃO!\n\nTem ABSOLUTA CERTEZA?\n\nDigite "SIM" mentalmente e clique OK para continuar.')) return;
           
           try {
-            showAdminMsg('🔥 Deletando todas as fotos...');
+            showAdminMsg('💾 Criando backup antes de deletar...');
             
             const storage = firebase.storage();
             const fotosSnap = await db.collection('fotos_natal').get();
+            
+            // Criar backup antes de deletar
+            const backupFotos = [];
+            for (const doc of fotosSnap.docs) {
+              const fotoData = doc.data();
+              const votersSnap = await doc.ref.collection('voters').get();
+              const voters = votersSnap.docs.map(v => ({
+                uid: v.id,
+                votedAt: v.data().votedAt
+              }));
+              
+              backupFotos.push({
+                fotoId: doc.id,
+                andar: fotoData.andar,
+                apartamento: fotoData.apartamento,
+                urlFoto: fotoData.urlFoto,
+                uploadedAt: fotoData.uploadedAt,
+                userId: fotoData.userId,
+                votos: fotoData.votos || 0,
+                voters: voters
+              });
+            }
+            
+            // Salvar backup
+            await db.collection('backups_fotos').add({
+              timestamp: firebase.firestore.Timestamp.now(),
+              fotos: backupFotos
+            });
+            
+            showAdminMsg('🔥 Backup criado! Deletando todas as fotos...');
+            
             let deletadas = 0;
             let erros = 0;
             
