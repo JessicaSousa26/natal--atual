@@ -507,6 +507,7 @@
       if (btnRestaurarFotos) {
         btnRestaurarFotos.addEventListener('click', async () => {
           try {
+            console.log('🔄 Iniciando restauração de fotos...');
             showAdminMsg('🔄 Buscando backup de fotos...');
             
             // Buscar o backup mais recente
@@ -515,7 +516,10 @@
               .limit(1)
               .get();
             
+            console.log('Backups encontrados:', backupsSnap.size);
+            
             if (backupsSnap.empty) {
+              console.error('❌ Nenhum backup encontrado');
               showAdminMsg('❌ Nenhum backup de fotos encontrado!', true);
               return;
             }
@@ -545,16 +549,21 @@
                   andar: fotoBackup.andar,
                   apartamento: fotoBackup.apartamento,
                   urlFoto: fotoBackup.urlFoto,
+                  dataEnvio: fotoBackup.dataEnvio || fotoBackup.uploadedAt || firebase.firestore.Timestamp.now(),
                   uploadedAt: fotoBackup.uploadedAt || firebase.firestore.Timestamp.now(),
                   userId: fotoBackup.userId,
                   votos: fotoBackup.votos || 0
                 });
                 
+                console.log(`✅ Foto ${fotoBackup.fotoId} restaurada`);
+                
                 // Restaurar voters se existirem
                 if (fotoBackup.voters && fotoBackup.voters.length > 0) {
+                  console.log(`Restaurando ${fotoBackup.voters.length} voters para foto ${fotoBackup.fotoId}`);
                   for (const voter of fotoBackup.voters) {
                     await db.collection('fotos_natal').doc(fotoBackup.fotoId)
                       .collection('voters').doc(voter.uid).set({
+                        uid: voter.uid,
                         votedAt: voter.votedAt || firebase.firestore.Timestamp.now()
                       });
                   }
