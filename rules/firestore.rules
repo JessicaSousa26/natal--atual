@@ -14,11 +14,11 @@ service cloud.firestore {
     }
     
     match /backups_votos/{backupId} {
-      allow read, write, delete: if isAdmin();
+      allow read, write, delete, list: if isAdmin();
     }
     
     match /backups_fotos/{backupId} {
-      allow read, write, delete: if isAdmin();
+      allow read, write, delete, list: if isAdmin();
     }
 
     match /fotos_natal/{fotoId} {
