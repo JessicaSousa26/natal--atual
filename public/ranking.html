@@ -510,12 +510,20 @@
             console.log('🔄 Iniciando restauração de fotos...');
             console.log('👤 Usuário atual:', firebase.auth().currentUser?.email);
             console.log('🔑 UID:', firebase.auth().currentUser?.uid);
+            console.log('🔐 isAdmin:', isAdmin);
             showAdminMsg('🔄 Buscando backup de fotos...');
             
             // Buscar todos os backups (sem orderBy para evitar problema de permissão)
-            const backupsSnap = await db.collection('backups_fotos').get();
+            console.log('📡 Fazendo query na coleção backups_fotos...');
+            const backupsSnap = await db.collection('backups_fotos').get().catch(err => {
+              console.error('❌ Erro na query:', err);
+              throw err;
+            });
             
             console.log('📦 Backups encontrados:', backupsSnap.size);
+            if (backupsSnap.docs.length > 0) {
+              console.log('📋 IDs dos backups:', backupsSnap.docs.map(d => d.id));
+            }
             
             if (backupsSnap.empty) {
               console.error('❌ Nenhum backup encontrado');
