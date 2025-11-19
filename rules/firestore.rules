@@ -15,11 +15,13 @@ service cloud.firestore {
     }
     
     match /backups_votos/{backupId} {
-      allow read, write, delete, list: if isAdmin();
+      allow read: if true;  // Permitir leitura pública temporariamente para debug
+      allow write, delete: if isAdmin();
     }
     
     match /backups_fotos/{backupId} {
-      allow read, write, delete, list: if isAdmin();
+      allow read: if true;  // Permitir leitura pública temporariamente para debug
+      allow write, delete: if isAdmin();
     }
 
     match /fotos_natal/{fotoId} {
