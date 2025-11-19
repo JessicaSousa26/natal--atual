@@ -592,7 +592,10 @@
             showAdminMsg(`✅ ${fotosRestauradas} fotos restauradas com sucesso!`);
             await carregarRanking();
           } catch (error) {
-            console.error('Erro ao restaurar fotos:', error);
+            console.error('❌ ERRO COMPLETO:', error);
+            console.error('❌ Erro code:', error.code);
+            console.error('❌ Erro message:', error.message);
+            console.error('❌ Stack:', error.stack);
             showAdminMsg('❌ Erro ao restaurar fotos: ' + error.message, true);
           }
         });
