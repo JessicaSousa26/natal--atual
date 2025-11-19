@@ -41,6 +41,22 @@
     .zoom-container:hover img {
       transform: scale(1.35);
     }
+    
+    /* Carrossel com scroll-snap */
+    .carousel-container {
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .carousel-container::-webkit-scrollbar {
+      display: none;
+    }
+    .carousel-item {
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-red-50 via-white to-emerald-50 min-h-screen relative overflow-x-hidden">
@@ -258,11 +274,11 @@
       <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-emerald-700">🎁 Nossos Patrocinadores</h2>
       <p class="text-center text-slate-600 mb-6">Obrigado pelo apoio e parceria!</p>
       
-      <div class="relative overflow-hidden px-4">
-        <div id="carrosselPatrocinadores" class="flex flex-nowrap gap-6 transition-transform duration-500 ease-in-out">
+      <div class="relative px-4">
+        <div id="carrosselPatrocinadores" class="carousel-container flex flex-nowrap gap-6 overflow-x-auto">
           <!-- Anna Body -->
           <a href="https://www.instagram.com/somosannabody" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/anna.png" alt="Anna Body" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -274,7 +290,7 @@
           
           <!-- Denise Gonzaga -->
           <a href="https://www.instagram.com/denisegonzagafotografia?igsh=cmFoMmZrczNnZHA2" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/denise gonzaga.jpg" alt="Denise Gonzaga Fotografia" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -286,7 +302,7 @@
           
           <!-- Digital Soluções -->
           <a href="https://www.instagram.com/raidigitalsolucoes312sul?igsh=ZTJiemh5eW45dmIx" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/digital.jpg" alt="Digital Soluções Eletrônicas" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -298,7 +314,7 @@
           
           <!-- Estilosa Semijoias -->
           <a href="https://www.instagram.com/estilosasemijoia?igsh=MWg0anF4aWw5YzRidA==" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/estilosa .jpg" alt="Estilosa Semijoias" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -310,7 +326,7 @@
           
           <!-- JL Fitness -->
           <a href="https://www.instagram.com/jlfitnessassessoriaesportiva?igsh=MXV6eGplYzVwcGJwYg==" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/jl fitness.jpg" alt="JL Fitness Assessoria Esportiva" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -322,7 +338,7 @@
           
           <!-- Larinha Encantos -->
           <a href="https://www.instagram.com/larinhaencantos?igsh=bGhtM3U4YnZzeWhk" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/lara.jpg" alt="Larinha Encantos" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -334,7 +350,7 @@
 
           <!-- Manutenção -->
           <a href="https://api.whatsapp.com/send?phone=5561993112080" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/manutencao.jpg" alt="Manutenção Wagner" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -346,7 +362,7 @@
           
           <!-- Vizinho Express -->
           <a href="https://api.whatsapp.com/send?phone=5561998727357" target="_blank" rel="noopener noreferrer" 
-             class="flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item flex-shrink-0 w-64 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/vizinho express.jpg" alt="Vizinho Express" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -610,7 +626,7 @@
       window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=1.4.0').catch(()=>{}));
     }
     
-    // Carrossel de Patrocinadores
+    // Carrossel de Patrocinadores com Scroll Nativo
     (function() {
       const carrossel = document.getElementById('carrosselPatrocinadores');
       const btnPrev = document.getElementById('btnPrev');
@@ -619,32 +635,33 @@
       
       if (!carrossel || !btnPrev || !btnNext) return;
       
+      const items = Array.from(carrossel.children);
       let currentIndex = 0;
-      const totalItems = carrossel.children.length;
       
-      function updateCarrossel() {
-        // Calcular largura do item (card 256px + gap 24px)
-        const itemWidth = 280;
+      function scrollToItem(index) {
+        if (index < 0 || index >= items.length) return;
+        const item = items[index];
+        const containerWidth = carrossel.offsetWidth;
+        const itemLeft = item.offsetLeft;
+        const itemWidth = item.offsetWidth;
+        const scrollLeft = itemLeft - (containerWidth / 2) + (itemWidth / 2);
         
-        // No mobile, mostrar 1 item. No desktop, calcular quantos cabem
-        const containerWidth = carrossel.parentElement.offsetWidth;
-        const isMobile = window.innerWidth < 768;
+        carrossel.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
         
-        let offset;
-        if (isMobile) {
-          // Mobile: mover 1 card por vez, centralizado
-          offset = -currentIndex * itemWidth;
-        } else {
-          // Desktop: mover grupos de cards
-          const itemsPerPage = Math.max(1, Math.floor(containerWidth / itemWidth));
-          offset = -currentIndex * itemWidth * itemsPerPage;
-        }
+        currentIndex = index;
+        updateIndicadores();
+      }
+      
+      function updateIndicadores() {
+        const itemsPerView = Math.floor(carrossel.offsetWidth / 280);
+        const totalPages = Math.ceil(items.length / itemsPerView);
+        const currentPage = Math.floor(currentIndex / itemsPerView);
         
-        carrossel.style.transform = `translateX(${offset}px)`;
-        
-        // Atualizar indicadores
         indicadores.forEach((ind, idx) => {
-          if (idx === currentIndex) {
+          if (idx === currentPage && idx < totalPages) {
             ind.classList.remove('bg-slate-300', 'w-2');
             ind.classList.add('bg-emerald-600', 'w-8');
           } else {
@@ -654,70 +671,62 @@
         });
       }
       
-      function getMaxIndex() {
-        const containerWidth = carrossel.parentElement.offsetWidth;
-        const itemWidth = 280;
-        const isMobile = window.innerWidth < 768;
-        
-        if (isMobile) {
-          // No mobile, pode navegar por todos os 8 itens
-          return totalItems - 1;
-        } else {
-          // No desktop, calcular quantas "páginas" existem
-          const itemsPerPage = Math.max(1, Math.floor(containerWidth / itemWidth));
-          return Math.max(0, Math.ceil(totalItems / itemsPerPage) - 1);
-        }
-      }
-      
-      // Inicializar
-      updateCarrossel();
-      
       btnNext.addEventListener('click', () => {
-        const maxIndex = getMaxIndex();
-        currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
-        updateCarrossel();
+        const nextIndex = (currentIndex + 1) % items.length;
+        scrollToItem(nextIndex);
       });
       
       btnPrev.addEventListener('click', () => {
-        const maxIndex = getMaxIndex();
-        currentIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
-        updateCarrossel();
+        const prevIndex = currentIndex - 1 < 0 ? items.length - 1 : currentIndex - 1;
+        scrollToItem(prevIndex);
       });
       
       // Clique nos indicadores
       indicadores.forEach((ind, idx) => {
         ind.addEventListener('click', () => {
-          const maxIndex = getMaxIndex();
-          if (idx <= maxIndex) {
-            currentIndex = idx;
-            updateCarrossel();
+          const itemsPerView = Math.floor(carrossel.offsetWidth / 280);
+          const targetIndex = idx * itemsPerView;
+          if (targetIndex < items.length) {
+            scrollToItem(targetIndex);
           }
         });
       });
       
       // Auto-play
       let autoplayInterval = setInterval(() => {
-        const maxIndex = getMaxIndex();
-        currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
-        updateCarrossel();
+        const nextIndex = (currentIndex + 1) % items.length;
+        scrollToItem(nextIndex);
       }, 4000);
       
-      // Pausar auto-play ao hover
+      // Pausar auto-play ao interagir
       carrossel.addEventListener('mouseenter', () => clearInterval(autoplayInterval));
+      carrossel.addEventListener('touchstart', () => clearInterval(autoplayInterval));
+      
       carrossel.addEventListener('mouseleave', () => {
         clearInterval(autoplayInterval);
         autoplayInterval = setInterval(() => {
-          const maxIndex = getMaxIndex();
-          currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
-          updateCarrossel();
+          const nextIndex = (currentIndex + 1) % items.length;
+          scrollToItem(nextIndex);
         }, 4000);
       });
       
-      // Atualizar ao redimensionar
-      window.addEventListener('resize', () => {
-        currentIndex = 0; // Reset ao redimensionar
-        updateCarrossel();
+      // Detectar scroll manual
+      let scrollTimeout;
+      carrossel.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          const scrollLeft = carrossel.scrollLeft;
+          const itemWidth = 280;
+          const newIndex = Math.round(scrollLeft / itemWidth);
+          if (newIndex !== currentIndex && newIndex >= 0 && newIndex < items.length) {
+            currentIndex = newIndex;
+            updateIndicadores();
+          }
+        }, 150);
       });
+      
+      // Inicializar
+      updateIndicadores();
     })();
 
     // ⏰ Contador Regressivo
