@@ -508,15 +508,14 @@
         btnRestaurarFotos.addEventListener('click', async () => {
           try {
             console.log('🔄 Iniciando restauração de fotos...');
+            console.log('👤 Usuário atual:', firebase.auth().currentUser?.email);
+            console.log('🔑 UID:', firebase.auth().currentUser?.uid);
             showAdminMsg('🔄 Buscando backup de fotos...');
             
-            // Buscar o backup mais recente
-            const backupsSnap = await db.collection('backups_fotos')
-              .orderBy('timestamp', 'desc')
-              .limit(1)
-              .get();
+            // Buscar todos os backups (sem orderBy para evitar problema de permissão)
+            const backupsSnap = await db.collection('backups_fotos').get();
             
-            console.log('Backups encontrados:', backupsSnap.size);
+            console.log('📦 Backups encontrados:', backupsSnap.size);
             
             if (backupsSnap.empty) {
               console.error('❌ Nenhum backup encontrado');
@@ -524,7 +523,10 @@
               return;
             }
             
-            const backup = backupsSnap.docs[0].data();
+            // Pegar o backup mais recente manualmente
+            const backups = backupsSnap.docs.map(doc => ({id: doc.id, data: doc.data()}));
+            backups.sort((a, b) => b.data.timestamp.toMillis() - a.data.timestamp.toMillis());
+            const backup = backups[0].data;
             const dataBackup = backup.timestamp.toDate().toLocaleString('pt-BR');
             
             if (!confirm(`🔄 Deseja restaurar o backup de ${dataBackup}?\n\nTotal: ${backup.fotos.length} fotos\n\nIsso irá adicionar as fotos deletadas de volta!`)) return;
