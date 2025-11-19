@@ -5,7 +5,8 @@ service cloud.firestore {
     // Função auxiliar para verificar se é admin
     function isAdmin() {
       return request.auth != null && 
-             request.auth.token.email == 'jhessymary26@gmail.com';
+             (request.auth.token.email == 'jhessymary26@gmail.com' ||
+              request.auth.uid == 'p4xZbXWYnjWKN87wGiVpPvRBxAn2');
     }
 
     match /settings/votacao {
