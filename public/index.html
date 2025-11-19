@@ -622,21 +622,24 @@
       let currentIndex = 0;
       const totalItems = carrossel.children.length;
       
-      function getItemsPerPage() {
-        const containerWidth = carrossel.parentElement.offsetWidth;
-        const itemWidth = 280; // 256px card + 24px gap
-        return Math.max(1, Math.floor(containerWidth / itemWidth));
-      }
-      
-      function getMaxIndex() {
-        const itemsPerPage = getItemsPerPage();
-        return Math.max(0, Math.ceil(totalItems / itemsPerPage) - 1);
-      }
-      
       function updateCarrossel() {
-        const itemsPerPage = getItemsPerPage();
+        // Calcular largura do item (card 256px + gap 24px)
         const itemWidth = 280;
-        const offset = -currentIndex * itemWidth * itemsPerPage;
+        
+        // No mobile, mostrar 1 item. No desktop, calcular quantos cabem
+        const containerWidth = carrossel.parentElement.offsetWidth;
+        const isMobile = window.innerWidth < 768;
+        
+        let offset;
+        if (isMobile) {
+          // Mobile: mover 1 card por vez, centralizado
+          offset = -currentIndex * itemWidth;
+        } else {
+          // Desktop: mover grupos de cards
+          const itemsPerPage = Math.max(1, Math.floor(containerWidth / itemWidth));
+          offset = -currentIndex * itemWidth * itemsPerPage;
+        }
+        
         carrossel.style.transform = `translateX(${offset}px)`;
         
         // Atualizar indicadores
@@ -651,50 +654,70 @@
         });
       }
       
-      // Inicializar carrossel visível
+      function getMaxIndex() {
+        const containerWidth = carrossel.parentElement.offsetWidth;
+        const itemWidth = 280;
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+          // No mobile, pode navegar por todos os 8 itens
+          return totalItems - 1;
+        } else {
+          // No desktop, calcular quantas "páginas" existem
+          const itemsPerPage = Math.max(1, Math.floor(containerWidth / itemWidth));
+          return Math.max(0, Math.ceil(totalItems / itemsPerPage) - 1);
+        }
+      }
+      
+      // Inicializar
       updateCarrossel();
       
       btnNext.addEventListener('click', () => {
         const maxIndex = getMaxIndex();
-        currentIndex = (currentIndex + 1) % (maxIndex + 1);
+        currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
         updateCarrossel();
       });
       
       btnPrev.addEventListener('click', () => {
         const maxIndex = getMaxIndex();
-        currentIndex = (currentIndex - 1 + maxIndex + 1) % (maxIndex + 1);
+        currentIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
         updateCarrossel();
       });
       
       // Clique nos indicadores
       indicadores.forEach((ind, idx) => {
         ind.addEventListener('click', () => {
-          currentIndex = idx;
-          updateCarrossel();
+          const maxIndex = getMaxIndex();
+          if (idx <= maxIndex) {
+            currentIndex = idx;
+            updateCarrossel();
+          }
         });
       });
       
       // Auto-play
       let autoplayInterval = setInterval(() => {
         const maxIndex = getMaxIndex();
-        currentIndex = (currentIndex + 1) % (maxIndex + 1);
+        currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
         updateCarrossel();
       }, 4000);
       
       // Pausar auto-play ao hover
       carrossel.addEventListener('mouseenter', () => clearInterval(autoplayInterval));
       carrossel.addEventListener('mouseleave', () => {
+        clearInterval(autoplayInterval);
         autoplayInterval = setInterval(() => {
           const maxIndex = getMaxIndex();
-          currentIndex = (currentIndex + 1) % (maxIndex + 1);
+          currentIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
           updateCarrossel();
         }, 4000);
       });
       
       // Atualizar ao redimensionar
-      window.addEventListener('resize', updateCarrossel);
-      
-      updateCarrossel();
+      window.addEventListener('resize', () => {
+        currentIndex = 0; // Reset ao redimensionar
+        updateCarrossel();
+      });
     })();
 
     // ⏰ Contador Regressivo
