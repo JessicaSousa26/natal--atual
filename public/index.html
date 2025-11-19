@@ -42,20 +42,29 @@
       transform: scale(1.35);
     }
     
-    /* Carrossel com scroll-snap */
-    .carousel-container {
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+    /* Carrossel infinito */
+    @keyframes scroll-carousel {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
     }
-    .carousel-container::-webkit-scrollbar {
-      display: none;
+    
+    .carousel-track {
+      display: flex;
+      animation: scroll-carousel 30s linear infinite;
+      width: fit-content;
     }
+    
+    .carousel-track:hover {
+      animation-play-state: paused;
+    }
+    
     .carousel-item {
-      scroll-snap-align: center;
-      scroll-snap-stop: always;
+      flex-shrink: 0;
+      width: 280px;
     }
   </style>
 </head>
@@ -274,11 +283,11 @@
       <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-emerald-700">🎁 Nossos Patrocinadores</h2>
       <p class="text-center text-slate-600 mb-6">Obrigado pelo apoio e parceria!</p>
       
-      <div class="px-4">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div class="overflow-hidden">
+        <div class="carousel-track gap-6">
           <!-- Anna Body -->
           <a href="https://www.instagram.com/somosannabody" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/anna.png" alt="Anna Body" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -290,11 +299,11 @@
           
           <!-- Denise Gonzaga -->
           <a href="https://www.instagram.com/denisegonzagafotografia?igsh=cmFoMmZrczNnZHA2" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/denise gonzaga.jpg" alt="Denise Gonzaga Fotografia" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
-              <div class="text-4xl mb-2">�</div>
+              <div class="text-4xl mb-2">📷</div>
               <div class="font-bold text-slate-700">Denise Gonzaga</div>
               <div class="text-xs text-slate-500">Fotografia</div>
             </div>
@@ -302,7 +311,7 @@
           
           <!-- Digital Soluções -->
           <a href="https://www.instagram.com/raidigitalsolucoes312sul?igsh=ZTJiemh5eW45dmIx" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/digital.jpg" alt="Digital Soluções Eletrônicas" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -314,7 +323,7 @@
           
           <!-- Estilosa Semijoias -->
           <a href="https://www.instagram.com/estilosasemijoia?igsh=MWg0anF4aWw5YzRidA==" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/estilosa .jpg" alt="Estilosa Semijoias" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -326,11 +335,11 @@
           
           <!-- JL Fitness -->
           <a href="https://www.instagram.com/jlfitnessassessoriaesportiva?igsh=MXV6eGplYzVwcGJwYg==" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/jl fitness.jpg" alt="JL Fitness Assessoria Esportiva" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
-              <div class="text-4xl mb-2">�</div>
+              <div class="text-4xl mb-2">🏋️</div>
               <div class="font-bold text-slate-700">JL FITNESS</div>
               <div class="text-xs text-slate-500">Assessoria Esportiva</div>
             </div>
@@ -338,7 +347,7 @@
           
           <!-- Larinha Encantos -->
           <a href="https://www.instagram.com/larinhaencantos?igsh=bGhtM3U4YnZzeWhk" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/lara.jpg" alt="Larinha Encantos" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -350,7 +359,7 @@
 
           <!-- Manutenção -->
           <a href="https://api.whatsapp.com/send?phone=5561993112080" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/manutencao.jpg" alt="Manutenção Wagner" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -362,7 +371,7 @@
           
           <!-- Vizinho Express -->
           <a href="https://api.whatsapp.com/send?phone=5561998727357" target="_blank" rel="noopener noreferrer" 
-             class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-4 md:p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
             <img src="./assets/patrocinadores/vizinho express.jpg" alt="Vizinho Express" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="hidden flex-col items-center justify-center text-center">
@@ -370,6 +379,40 @@
               <div class="font-bold text-slate-700">Vizinho Express</div>
               <div class="text-xs text-slate-500">Entregas Rápidas</div>
             </div>
+          </a>
+          
+          <!-- Duplicação para loop infinito -->
+          <a href="https://www.instagram.com/somosannabody" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/anna.png" alt="Anna Body" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://www.instagram.com/denisegonzagafotografia?igsh=cmFoMmZrczNnZHA2" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/denise gonzaga.jpg" alt="Denise Gonzaga Fotografia" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://www.instagram.com/raidigitalsolucoes312sul?igsh=ZTJiemh5eW45dmIx" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/digital.jpg" alt="Digital Soluções Eletrônicas" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://www.instagram.com/estilosasemijoia?igsh=MWg0anF4aWw5YzRidA==" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/estilosa .jpg" alt="Estilosa Semijoias" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://www.instagram.com/jlfitnessassessoriaesportiva?igsh=MXV6eGplYzVwcGJwYg==" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/jl fitness.jpg" alt="JL Fitness Assessoria Esportiva" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://www.instagram.com/larinhaencantos?igsh=bGhtM3U4YnZzeWhk" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/lara.jpg" alt="Larinha Encantos" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://api.whatsapp.com/send?phone=5561993112080" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/manutencao.jpg" alt="Manutenção Wagner" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
+          </a>
+          <a href="https://api.whatsapp.com/send?phone=5561998727357" target="_blank" rel="noopener noreferrer" 
+             class="carousel-item bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 p-6 flex items-center justify-center border-2 border-slate-200 hover:border-emerald-400 group">
+            <img src="./assets/patrocinadores/vizinho express.jpg" alt="Vizinho Express" class="max-w-full max-h-32 object-contain group-hover:drop-shadow-lg transition-all">
           </a>
         </div>
       </div>
@@ -605,6 +648,18 @@
   <script src="./js/firebase.js?v=1.4.0"></script>
   <script src="./js/app.js?v=1.4.0"></script>
   <script src="./js/theme.js?v=1.4.0"></script>
+  
+  <script>
+    // Garante animação suave do carrossel infinito
+    document.addEventListener('DOMContentLoaded', function() {
+      const track = document.querySelector('.carousel-track');
+      if (track) {
+        // Pausa ao hover (já está no CSS, mas garantindo aqui também)
+        track.addEventListener('mouseenter', () => track.style.animationPlayState = 'paused');
+        track.addEventListener('mouseleave', () => track.style.animationPlayState = 'running');
+      }
+    });
+  </script>
   <script>
     // Registra Service Worker para PWA
     if('serviceWorker' in navigator){
