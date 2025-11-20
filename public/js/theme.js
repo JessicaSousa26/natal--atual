@@ -12,27 +12,28 @@
   function resize() {
     W = c.width = window.innerWidth;
     H = c.height = window.innerHeight;
-    // Quantidade média de neve: 80 flocos
-    flakes = Array.from({ length: Math.min(80, Math.floor(W/15)) }, () => ({
+    // Ajuste para mobile: mínimo 30 flocos, máximo 100
+    const flakeCount = Math.max(30, Math.min(100, Math.floor(W * H / 5000)));
+    flakes = Array.from({ length: flakeCount }, () => ({
       x: Math.random()*W,
       y: Math.random()*H,
-      r: Math.random()*2 + 1.2,
-      d: Math.random()*1 + .5
+      r: Math.random()*2.5 + 1.5, // Flocos um pouco maiores para mobile
+      d: Math.random()*1.2 + .6  // Velocidade ajustada
     }));
   }
   function draw() {
     ctx.clearRect(0,0,W,H);
     if (snowEnabled) {
-      ctx.fillStyle = 'rgba(135,206,250,0.85)'; // Azul claro (sky blue)
-      ctx.shadowColor = 'rgba(70,130,180,0.6)'; // Sombra azul
-      ctx.shadowBlur = 4;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'; // Branco puro mais visível
+      ctx.shadowColor = 'rgba(135,206,250,0.8)'; // Halo azul
+      ctx.shadowBlur = 6;
       flakes.forEach(f => {
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
         ctx.fill();
         f.y += f.d;
-        f.x += Math.sin(f.y * 0.01);
-        if (f.y > H) { f.y = -5; f.x = Math.random()*W; }
+        f.x += Math.sin(f.y * 0.01) * 0.5; // Movimento lateral suave
+        if (f.y > H) { f.y = -10; f.x = Math.random()*W; }
       });
     }
     animationId = requestAnimationFrame(draw);
@@ -45,6 +46,14 @@
   }
   
   window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', () => setTimeout(resize, 100));
+  
+  // Forçar inicialização no mobile
+  setTimeout(() => {
+    resize();
+    if (!animationId) draw();
+  }, 100);
+  
   resize(); 
   draw(); // Sempre inicia o loop
   updateSnowBtn();
