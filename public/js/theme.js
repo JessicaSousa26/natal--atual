@@ -70,7 +70,7 @@
   });
 })();
 
-// ===== 🎵 MÚSICA =====
+// ===== 🎵 MÚSICA (PLAYLIST NATALINA) =====
 (() => {
   const audio = document.getElementById('bgMusic');
   const btn = document.getElementById('musicToggle');
@@ -80,13 +80,36 @@
 
   if (!audio || !btn) return;
 
+  // 🎄 Playlist de músicas natalinas
+  const playlist = [
+    './assets/jingle-bells.mp3',
+    './assets/we-wish-you.mp3',
+    './assets/deck-the-halls.mp3',
+    './assets/silent-night.mp3',
+    './assets/feliz-navidad.mp3'
+  ];
+  
+  let currentTrack = 0;
   const LS_KEY = 'xmas_music_pref'; // 'on' | 'off'
   let pref = localStorage.getItem(LS_KEY);
 
   function setBtn(state) {
     btn.style.opacity = state === 'on' ? '1' : '0.5';
   }
+  
+  function loadTrack(index) {
+    audio.src = playlist[index];
+    audio.load();
+  }
+  
+  function playNextTrack() {
+    currentTrack = (currentTrack + 1) % playlist.length;
+    loadTrack(currentTrack);
+    audio.play().catch(() => {});
+  }
+  
   function tryPlay() {
+    loadTrack(currentTrack);
     audio.play().then(() => {
       localStorage.setItem(LS_KEY, 'on');
       setBtn('on');
@@ -95,6 +118,9 @@
       modal?.classList.remove('hidden');
     });
   }
+
+  // Quando uma música termina, toca a próxima
+  audio.addEventListener('ended', playNextTrack);
 
   // Sempre tentar tocar automaticamente se não foi desativada
   if (pref !== 'off') {
@@ -106,6 +132,9 @@
 
   btn.addEventListener('click', () => {
     if (audio.paused) {
+      if (!audio.src || audio.src.includes('undefined')) {
+        loadTrack(currentTrack);
+      }
       audio.play().then(() => {
         localStorage.setItem(LS_KEY, 'on');
         setBtn('on');
@@ -121,12 +150,16 @@
   });
 
   playB?.addEventListener('click', () => {
+    if (!audio.src || audio.src.includes('undefined')) {
+      loadTrack(currentTrack);
+    }
     audio.play().then(() => {
       localStorage.setItem(LS_KEY, 'on');
       setBtn('on');
       modal?.classList.add('hidden');
     });
   });
+  
   noB?.addEventListener('click', () => {
     audio.pause();
     localStorage.setItem(LS_KEY, 'off');
