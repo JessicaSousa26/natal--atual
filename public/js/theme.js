@@ -74,11 +74,13 @@
 (() => {
   const audio = document.getElementById('bgMusic');
   const btn = document.getElementById('musicToggle');
-  const modal = document.getElementById('musicModal');
-  const playB = document.getElementById('modalPlay');
-  const noB = document.getElementById('modalNo');
 
-  if (!audio || !btn) return;
+  if (!audio || !btn) {
+    console.error('❌ Elementos de áudio não encontrados!');
+    return;
+  }
+
+  console.log('🎵 Sistema de música carregado - v1.7.8');
 
   // 🎄 Playlist de músicas natalinas (ordem 1-10)
   const playlist = [
@@ -96,25 +98,21 @@
   
   let currentTrack = 0;
   let isPlaying = false;
-  let tentandoTocar = false;
 
   function setBtn(playing) {
     btn.style.opacity = playing ? '1' : '0.5';
-    // Encontrar e substituir apenas o emoji, mantendo o texto
-    const html = btn.innerHTML;
-    if (playing) {
-      btn.innerHTML = html.replace(/🔕/g, '🔔').replace(/^([^🔔🔕])/, '🔔 $1');
-      if (!btn.innerHTML.includes('🔔')) {
-        btn.innerHTML = '🔔 ' + html;
-      }
+    const textSpan = btn.querySelector('span');
+    if (textSpan) {
+      btn.childNodes[0].textContent = playing ? '🔔 ' : '🔕 ';
     } else {
-      btn.innerHTML = html.replace(/🔔/g, '🔕');
+      btn.textContent = playing ? '🔔 Música' : '🔕 Música';
     }
   }
   
   function loadTrack(index) {
     audio.src = playlist[index];
     audio.load();
+    console.log(`🎵 Música ${index + 1}/10 carregada`);
   }
   
   function playNextTrack() {
@@ -125,49 +123,54 @@
     }
   }
 
-  function tentarTocar() {
-    if (tentandoTocar) return;
-    tentandoTocar = true;
+  function iniciarMusica() {
+    loadTrack(currentTrack);
     
-    if (!audio.src || audio.src.includes('undefined')) {
-      loadTrack(currentTrack);
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.then(() => {
+        isPlaying = true;
+        setBtn(true);
+        console.log('✅ Música tocando!');
+      }).catch(err => {
+        console.log('⏸️ Autoplay bloqueado - aguardando interação');
+        isPlaying = false;
+        setBtn(true); // Mantém botão ativo
+      });
     }
-    
-    audio.play().then(() => {
-      isPlaying = true;
-      setBtn(true);
-      console.log('✅ Música iniciada com sucesso!');
-    }).catch(err => {
-      console.log('⏸️ Autoplay bloqueado pelo navegador, aguardando interação...');
-      isPlaying = false;
-      setBtn(true); // Mostra botão ativado mesmo bloqueado
-      tentandoTocar = false;
-    });
   }
 
   // Quando uma música termina, toca a próxima
   audio.addEventListener('ended', playNextTrack);
 
-  // Carregar primeira música
-  loadTrack(currentTrack);
-  
   // Mostrar botão como ativo desde o início
   setBtn(true);
 
-  // Tentar tocar imediatamente em múltiplos momentos
-  setTimeout(() => tentarTocar(), 100);
-  setTimeout(() => tentarTocar(), 300);
-  setTimeout(() => tentarTocar(), 500);
-  setTimeout(() => tentarTocar(), 1000);
-  setTimeout(() => tentarTocar(), 2000);
+  // Iniciar música imediatamente
+  iniciarMusica();
 
-  // Capturar QUALQUER interação do usuário para iniciar música
-  const eventos = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown', 'scroll', 'mousemove'];
+  // Tentar novamente após pequenos delays
+  setTimeout(() => {
+    if (!isPlaying) {
+      console.log('🔄 Tentando iniciar música novamente...');
+      iniciarMusica();
+    }
+  }, 500);
+
+  setTimeout(() => {
+    if (!isPlaying) {
+      console.log('🔄 Última tentativa de iniciar música...');
+      iniciarMusica();
+    }
+  }, 1500);
+
+  // Capturar primeira interação para iniciar música
+  const eventos = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown'];
   
   function iniciarNaInteracao() {
     if (!isPlaying) {
-      tentandoTocar = false;
-      tentarTocar();
+      console.log('👆 Interação detectada - iniciando música');
+      iniciarMusica();
     }
   }
   
@@ -175,25 +178,18 @@
     document.addEventListener(evento, iniciarNaInteracao, { once: true, passive: true });
   });
 
-  // Também tentar quando a página ficar visível
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && !isPlaying) {
-      tentandoTocar = false;
-      tentarTocar();
-    }
-  });
-
   // Botão toggle: pausa/retoma música
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
+    console.log('🔘 Botão clicado - Estado atual:', isPlaying ? 'Tocando' : 'Pausado');
     
     if (audio.paused || !isPlaying) {
-      tentandoTocar = false;
-      tentarTocar();
+      iniciarMusica();
     } else {
       audio.pause();
       isPlaying = false;
       setBtn(false);
+      console.log('⏸️ Música pausada');
     }
   });
 })();
