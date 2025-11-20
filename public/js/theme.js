@@ -95,10 +95,12 @@
   ];
   
   let currentTrack = 0;
-  let isPlaying = true; // Começa ativado
+  let isPlaying = false;
+  let userInteracted = false;
 
   function setBtn(playing) {
     btn.style.opacity = playing ? '1' : '0.5';
+    btn.textContent = playing ? '🔔 ' : '🔕 ';
   }
   
   function loadTrack(index) {
@@ -109,29 +111,58 @@
   function playNextTrack() {
     currentTrack = (currentTrack + 1) % playlist.length;
     loadTrack(currentTrack);
-    audio.play().catch(() => {});
+    if (isPlaying) {
+      audio.play().catch(() => {});
+    }
+  }
+
+  function startMusic() {
+    if (!userInteracted) {
+      userInteracted = true;
+    }
+    loadTrack(currentTrack);
+    audio.play().then(() => {
+      isPlaying = true;
+      setBtn(true);
+    }).catch(err => {
+      console.log('Autoplay bloqueado, aguardando interação do usuário');
+      isPlaying = false;
+      setBtn(false);
+    });
   }
 
   // Quando uma música termina, toca a próxima
   audio.addEventListener('ended', playNextTrack);
 
-  // Inicia automaticamente sem modal
-  setBtn(true); // Botão aparece ativado desde o início
-  loadTrack(currentTrack);
+  // Tentar iniciar música automaticamente
+  setBtn(false);
+  
+  // Múltiplas tentativas de autoplay
+  setTimeout(() => startMusic(), 100);
   setTimeout(() => {
-    audio.play().then(() => {
-      isPlaying = true;
-      setBtn(true);
-    }).catch(() => {
-      // Mantém botão ativado mesmo se falhar
-      isPlaying = true;
-      setBtn(true);
-    });
+    if (!isPlaying) startMusic();
   }, 500);
+  setTimeout(() => {
+    if (!isPlaying) startMusic();
+  }, 1000);
+
+  // Iniciar música na primeira interação do usuário com a página
+  const iniciarNaPrimeiraInteracao = () => {
+    if (!isPlaying && !userInteracted) {
+      startMusic();
+    }
+  };
+  
+  document.addEventListener('click', iniciarNaPrimeiraInteracao, { once: true });
+  document.addEventListener('touchstart', iniciarNaPrimeiraInteracao, { once: true });
+  document.addEventListener('keydown', iniciarNaPrimeiraInteracao, { once: true });
 
   // Botão toggle: liga/desliga música
-  btn.addEventListener('click', () => {
-    if (audio.paused) {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    userInteracted = true;
+    
+    if (audio.paused || !isPlaying) {
       if (!audio.src || audio.src.includes('undefined')) {
         loadTrack(currentTrack);
       }
