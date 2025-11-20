@@ -95,11 +95,10 @@
   ];
   
   let currentTrack = 0;
-  const LS_KEY = 'xmas_music_pref'; // 'on' | 'off'
-  let pref = localStorage.getItem(LS_KEY);
+  let isPlaying = false;
 
-  function setBtn(state) {
-    btn.style.opacity = state === 'on' ? '1' : '0.5';
+  function setBtn(playing) {
+    btn.style.opacity = playing ? '1' : '0.5';
   }
   
   function loadTrack(index) {
@@ -112,64 +111,38 @@
     loadTrack(currentTrack);
     audio.play().catch(() => {});
   }
-  
-  function tryPlay() {
-    loadTrack(currentTrack);
-    audio.play().then(() => {
-      localStorage.setItem(LS_KEY, 'on');
-      setBtn('on');
-      modal?.classList.add('hidden');
-    }).catch(() => {
-      modal?.classList.remove('hidden');
-    });
-  }
 
   // Quando uma música termina, toca a próxima
   audio.addEventListener('ended', playNextTrack);
 
-  // Sempre tentar tocar automaticamente se não foi desativada
-  if (pref !== 'off') {
-    // Pequeno delay para garantir que a página carregou
-    setTimeout(() => tryPlay(), 500);
-  } else {
-    setBtn('off');
-  }
+  // Inicia automaticamente sem modal
+  loadTrack(currentTrack);
+  setTimeout(() => {
+    audio.play().then(() => {
+      isPlaying = true;
+      setBtn(true);
+    }).catch(() => {
+      // Silenciosamente falha sem mostrar modal
+      isPlaying = false;
+      setBtn(false);
+    });
+  }, 500);
 
+  // Botão toggle: liga/desliga música
   btn.addEventListener('click', () => {
     if (audio.paused) {
       if (!audio.src || audio.src.includes('undefined')) {
         loadTrack(currentTrack);
       }
       audio.play().then(() => {
-        localStorage.setItem(LS_KEY, 'on');
-        setBtn('on');
-        modal?.classList.add('hidden');
-      }).catch(() => {
-        modal?.classList.remove('hidden');
-      });
+        isPlaying = true;
+        setBtn(true);
+      }).catch(() => {});
     } else {
       audio.pause();
-      localStorage.setItem(LS_KEY, 'off');
-      setBtn('off');
+      isPlaying = false;
+      setBtn(false);
     }
-  });
-
-  playB?.addEventListener('click', () => {
-    if (!audio.src || audio.src.includes('undefined')) {
-      loadTrack(currentTrack);
-    }
-    audio.play().then(() => {
-      localStorage.setItem(LS_KEY, 'on');
-      setBtn('on');
-      modal?.classList.add('hidden');
-    });
-  });
-  
-  noB?.addEventListener('click', () => {
-    audio.pause();
-    localStorage.setItem(LS_KEY, 'off');
-    setBtn('off');
-    modal?.classList.add('hidden');
   });
 })();
 
