@@ -275,9 +275,31 @@
           return;
         }
         
-        snap.forEach(doc => {
+        for (const doc of snap.docs) {
           const d = doc.data();
           const medalIcon = i === 1 ? '🥇' : i === 2 ? '🥈' : i === 3 ? '🥉' : '';
+          
+          // Buscar emails dos votantes
+          const votersSnap = await doc.ref.collection('voters').get();
+          const emailsVotantes = [];
+          
+          for (const voterDoc of votersSnap.docs) {
+            const voterData = voterDoc.data();
+            // Buscar informações do usuário pelo UID
+            try {
+              // O email pode estar armazenado no voter ou precisamos buscar do Auth
+              // Como não temos acesso direto ao Auth no frontend, vamos armazenar o email ao votar
+              const email = voterData.email || voterDoc.id; // fallback para UID se não tiver email
+              emailsVotantes.push(email);
+            } catch (err) {
+              console.error('Erro ao buscar votante:', err);
+            }
+          }
+          
+          const emailsTexto = emailsVotantes.length > 0 
+            ? emailsVotantes.join(', ') 
+            : 'Nenhum voto ainda';
+          
           html += `
             <div class="py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors rounded-lg px-2 relative">
               <div class="w-12 text-2xl font-bold ${i<=3?'text-emerald-600':'text-slate-400'} text-center">
@@ -302,11 +324,14 @@
                     voto${(d.votos || 0) !== 1 ? 's' : ''}
                   </span>
                 </div>
+                <div class="text-xs text-slate-500 mt-2">
+                  <strong>Votantes:</strong> ${emailsTexto}
+                </div>
               </div>
             </div>
           `;
           i++;
-        });
+        }
         
         rankingEl.innerHTML = html || `<p class="text-sm text-slate-500 p-4">Nenhuma foto enviada ainda.</p>`;
       } catch (error) {
@@ -718,6 +743,7 @@
               th { background-color: #059669; color: white; }
               tr:nth-child(even) { background-color: #f2f2f2; }
               .medal { font-size: 24px; }
+              .emails { font-size: 10px; color: #666; }
             </style>
           </head>
           <body>
@@ -730,25 +756,42 @@
                   <th>Andar</th>
                   <th>Apartamento</th>
                   <th>Votos</th>
+                  <th>E-mails dos Votantes</th>
                 </tr>
               </thead>
               <tbody>
         `;
         
         let pos = 1;
-        snap.forEach(doc => {
+        for (const doc of snap.docs) {
           const d = doc.data();
           const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
+          
+          // Buscar emails dos votantes
+          const votersSnap = await doc.ref.collection('voters').get();
+          const emailsVotantes = [];
+          
+          for (const voterDoc of votersSnap.docs) {
+            const voterData = voterDoc.data();
+            const email = voterData.email || voterDoc.id;
+            emailsVotantes.push(email);
+          }
+          
+          const emailsTexto = emailsVotantes.length > 0 
+            ? emailsVotantes.join(', ') 
+            : '-';
+          
           content += `
             <tr>
               <td class="medal">${medal} ${pos}º</td>
               <td>${d.andar}º andar</td>
               <td>${d.apartamento}</td>
               <td><strong>${d.votos || 0}</strong> voto${(d.votos || 0) !== 1 ? 's' : ''}</td>
+              <td class="emails">${emailsTexto}</td>
             </tr>
           `;
           pos++;
-        });
+        }
         
         content += `
               </tbody>
@@ -859,6 +902,7 @@
               th { background-color: #059669; color: white; }
               tr:nth-child(even) { background-color: #f2f2f2; }
               .medal { font-size: 24px; }
+              .emails { font-size: 10px; color: #666; }
             </style>
           </head>
           <body>
@@ -871,25 +915,42 @@
                   <th>Andar</th>
                   <th>Apartamento</th>
                   <th>Votos</th>
+                  <th>E-mails dos Votantes</th>
                 </tr>
               </thead>
               <tbody>
         `;
         
         let pos = 1;
-        snap.forEach(doc => {
+        for (const doc of snap.docs) {
           const d = doc.data();
           const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
+          
+          // Buscar emails dos votantes
+          const votersSnap = await doc.ref.collection('voters').get();
+          const emailsVotantes = [];
+          
+          for (const voterDoc of votersSnap.docs) {
+            const voterData = voterDoc.data();
+            const email = voterData.email || voterDoc.id;
+            emailsVotantes.push(email);
+          }
+          
+          const emailsTexto = emailsVotantes.length > 0 
+            ? emailsVotantes.join(', ') 
+            : '-';
+          
           content += `
             <tr>
               <td class="medal">${medal} ${pos}º</td>
               <td>${d.andar}º andar</td>
               <td>${d.apartamento}</td>
               <td><strong>${d.votos || 0}</strong> voto${(d.votos || 0) !== 1 ? 's' : ''}</td>
+              <td class="emails">${emailsTexto}</td>
             </tr>
           `;
           pos++;
-        });
+        }
         
         content += `
               </tbody>

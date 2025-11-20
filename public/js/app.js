@@ -401,7 +401,11 @@ window.votar = async (fotoId) => {
 
       if (voterSnap.exists) throw new Error('Você já votou nesta foto.');
       
-      tx.set(voterRef, { uid: currentUser.uid, votedAt: agora });
+      tx.set(voterRef, { 
+        uid: currentUser.uid, 
+        email: currentUser.email,
+        votedAt: agora 
+      });
       const votosAtuais = fotoSnap.data().votos || 0;
       tx.update(fotoRef, { votos: votosAtuais + 1 });
     });
