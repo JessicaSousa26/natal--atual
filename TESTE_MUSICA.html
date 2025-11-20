@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste de Música</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s;
+    }
+    #musicToggle {
+      background: #4ecdc4;
+      color: white;
+    }
+    #musicToggle:hover {
+      background: #45b8b0;
+      transform: scale(1.05);
+    }
+    .log {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-entry {
+      padding: 5px;
+      border-bottom: 1px solid #ddd;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .info { color: blue; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎵 Teste de Autoplay de Música</h1>
+    <p>Este é um teste para verificar se a música toca automaticamente em diferentes navegadores.</p>
+    
+    <audio id="bgMusic" preload="auto"></audio>
+    
+    <div>
+      <button id="musicToggle">🔔 Música</button>
+    </div>
+    
+    <div class="log" id="log">
+      <strong>📋 Log de Eventos:</strong>
+    </div>
+  </div>
+
+  <script>
+    const logDiv = document.getElementById('log');
+    
+    function addLog(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logDiv.appendChild(entry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+      console.log(message);
+    }
+
+    // ===== MÚSICA =====
+    const audio = document.getElementById('bgMusic');
+    const btn = document.getElementById('musicToggle');
+
+    if (!audio || !btn) {
+      addLog('❌ Elementos não encontrados!', 'error');
+    } else {
+      addLog('✅ Elementos carregados', 'success');
+    }
+
+    const playlist = [
+      './assets/musicas/1 - jingle-bells-rock-125676.mp3',
+      './assets/musicas/2 - happy-christmas-music-437861.mp3',
+      './assets/musicas/3 - We Wish You A Merry Christmas - DJ Williams.mp3',
+      './assets/musicas/4 - christmas-holiday-438466.mp3',
+      './assets/musicas/5 - santa-claus-is-coming-to-town-christmas-piano-248543.mp3',
+      './assets/musicas/6 - let-it-snow-184565.mp3',
+      './assets/musicas/7 - christmas-438144.mp3',
+      './assets/musicas/8 - Snow Princess - Jimena Contreras.mp3',
+      './assets/musicas/9 - Oh Christmas Tree - DJ Williams.mp3',
+      './assets/musicas/10 - chrismas-happy-179609.mp3'
+    ];
+    
+    let currentTrack = 0;
+    let isPlaying = false;
+
+    function setBtn(playing) {
+      btn.style.opacity = playing ? '1' : '0.5';
+      btn.textContent = playing ? '🔔 Música (Tocando)' : '🔕 Música (Pausada)';
+    }
+    
+    function loadTrack(index) {
+      audio.src = playlist[index];
+      audio.load();
+      addLog(`🎵 Carregada música ${index + 1}/10: ${playlist[index].split('/').pop()}`, 'info');
+    }
+    
+    function playNextTrack() {
+      currentTrack = (currentTrack + 1) % playlist.length;
+      addLog(`⏭️ Próxima música: ${currentTrack + 1}/10`, 'info');
+      loadTrack(currentTrack);
+      if (isPlaying) {
+        audio.play().catch(() => {});
+      }
+    }
+
+    function iniciarMusica() {
+      addLog('🎬 Tentando iniciar música...', 'info');
+      loadTrack(currentTrack);
+      
+      const promise = audio.play();
+      if (promise !== undefined) {
+        promise.then(() => {
+          isPlaying = true;
+          setBtn(true);
+          addLog('✅ MÚSICA TOCANDO!', 'success');
+        }).catch(err => {
+          addLog('⏸️ Autoplay bloqueado: ' + err.message, 'error');
+          addLog('👆 Clique em qualquer lugar da página para iniciar', 'info');
+          isPlaying = false;
+          setBtn(true);
+        });
+      }
+    }
+
+    // Quando termina, toca próxima
+    audio.addEventListener('ended', playNextTrack);
+
+    // Detectar erros
+    audio.addEventListener('error', (e) => {
+      addLog('❌ Erro ao carregar áudio: ' + e.message, 'error');
+    });
+
+    // Detectar quando começa a tocar
+    audio.addEventListener('playing', () => {
+      addLog('▶️ Áudio começou a tocar!', 'success');
+    });
+
+    // Detectar quando pausa
+    audio.addEventListener('pause', () => {
+      if (!audio.ended) {
+        addLog('⏸️ Áudio pausado', 'info');
+      }
+    });
+
+    // Mostrar botão ativo
+    setBtn(true);
+    addLog('🎯 Navegador: ' + navigator.userAgent.split(')')[0] + ')', 'info');
+    addLog('📱 Plataforma: ' + navigator.platform, 'info');
+
+    // Tentar iniciar imediatamente
+    addLog('🚀 Iniciando música automaticamente em 100ms...', 'info');
+    setTimeout(() => iniciarMusica(), 100);
+
+    // Tentar novamente
+    setTimeout(() => {
+      if (!isPlaying) {
+        addLog('🔄 Segunda tentativa em 500ms...', 'info');
+        iniciarMusica();
+      }
+    }, 500);
+
+    setTimeout(() => {
+      if (!isPlaying) {
+        addLog('🔄 Terceira tentativa em 1500ms...', 'info');
+        iniciarMusica();
+      }
+    }, 1500);
+
+    // Capturar interações
+    const eventos = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown'];
+    
+    function iniciarNaInteracao(e) {
+      if (!isPlaying) {
+        addLog(`👆 Interação detectada: ${e.type}`, 'success');
+        iniciarMusica();
+      }
+    }
+    
+    eventos.forEach(evento => {
+      document.addEventListener(evento, iniciarNaInteracao, { once: true, passive: true });
+    });
+
+    // Botão
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      addLog('🔘 Botão clicado', 'info');
+      
+      if (audio.paused || !isPlaying) {
+        iniciarMusica();
+      } else {
+        audio.pause();
+        isPlaying = false;
+        setBtn(false);
+        addLog('⏸️ Música pausada manualmente', 'info');
+      }
+    });
+
+    addLog('✅ Sistema de música inicializado!', 'success');
+  </script>
+</body>
+</html>

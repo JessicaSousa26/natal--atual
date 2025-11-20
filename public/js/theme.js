@@ -126,6 +126,11 @@
   function iniciarMusica() {
     loadTrack(currentTrack);
     
+    // Desmutar e ajustar volume
+    audio.muted = false;
+    audio.volume = 0.5;
+    audio.loop = false; // Desliga loop do HTML
+    
     const promise = audio.play();
     if (promise !== undefined) {
       promise.then(() => {
