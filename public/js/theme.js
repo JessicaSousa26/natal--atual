@@ -96,11 +96,20 @@
   
   let currentTrack = 0;
   let isPlaying = false;
-  let userInteracted = false;
+  let tentandoTocar = false;
 
   function setBtn(playing) {
     btn.style.opacity = playing ? '1' : '0.5';
-    btn.textContent = playing ? '🔔 ' : '🔕 ';
+    // Encontrar e substituir apenas o emoji, mantendo o texto
+    const html = btn.innerHTML;
+    if (playing) {
+      btn.innerHTML = html.replace(/🔕/g, '🔔').replace(/^([^🔔🔕])/, '🔔 $1');
+      if (!btn.innerHTML.includes('🔔')) {
+        btn.innerHTML = '🔔 ' + html;
+      }
+    } else {
+      btn.innerHTML = html.replace(/🔔/g, '🔕');
+    }
   }
   
   function loadTrack(index) {
@@ -116,60 +125,71 @@
     }
   }
 
-  function startMusic() {
-    if (!userInteracted) {
-      userInteracted = true;
+  function tentarTocar() {
+    if (tentandoTocar) return;
+    tentandoTocar = true;
+    
+    if (!audio.src || audio.src.includes('undefined')) {
+      loadTrack(currentTrack);
     }
-    loadTrack(currentTrack);
+    
     audio.play().then(() => {
       isPlaying = true;
       setBtn(true);
+      console.log('✅ Música iniciada com sucesso!');
     }).catch(err => {
-      console.log('Autoplay bloqueado, aguardando interação do usuário');
+      console.log('⏸️ Autoplay bloqueado pelo navegador, aguardando interação...');
       isPlaying = false;
-      setBtn(false);
+      setBtn(true); // Mostra botão ativado mesmo bloqueado
+      tentandoTocar = false;
     });
   }
 
   // Quando uma música termina, toca a próxima
   audio.addEventListener('ended', playNextTrack);
 
-  // Tentar iniciar música automaticamente
-  setBtn(false);
+  // Carregar primeira música
+  loadTrack(currentTrack);
   
-  // Múltiplas tentativas de autoplay
-  setTimeout(() => startMusic(), 100);
-  setTimeout(() => {
-    if (!isPlaying) startMusic();
-  }, 500);
-  setTimeout(() => {
-    if (!isPlaying) startMusic();
-  }, 1000);
+  // Mostrar botão como ativo desde o início
+  setBtn(true);
 
-  // Iniciar música na primeira interação do usuário com a página
-  const iniciarNaPrimeiraInteracao = () => {
-    if (!isPlaying && !userInteracted) {
-      startMusic();
+  // Tentar tocar imediatamente em múltiplos momentos
+  setTimeout(() => tentarTocar(), 100);
+  setTimeout(() => tentarTocar(), 300);
+  setTimeout(() => tentarTocar(), 500);
+  setTimeout(() => tentarTocar(), 1000);
+  setTimeout(() => tentarTocar(), 2000);
+
+  // Capturar QUALQUER interação do usuário para iniciar música
+  const eventos = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown', 'scroll', 'mousemove'];
+  
+  function iniciarNaInteracao() {
+    if (!isPlaying) {
+      tentandoTocar = false;
+      tentarTocar();
     }
-  };
+  }
   
-  document.addEventListener('click', iniciarNaPrimeiraInteracao, { once: true });
-  document.addEventListener('touchstart', iniciarNaPrimeiraInteracao, { once: true });
-  document.addEventListener('keydown', iniciarNaPrimeiraInteracao, { once: true });
+  eventos.forEach(evento => {
+    document.addEventListener(evento, iniciarNaInteracao, { once: true, passive: true });
+  });
 
-  // Botão toggle: liga/desliga música
+  // Também tentar quando a página ficar visível
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !isPlaying) {
+      tentandoTocar = false;
+      tentarTocar();
+    }
+  });
+
+  // Botão toggle: pausa/retoma música
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    userInteracted = true;
     
     if (audio.paused || !isPlaying) {
-      if (!audio.src || audio.src.includes('undefined')) {
-        loadTrack(currentTrack);
-      }
-      audio.play().then(() => {
-        isPlaying = true;
-        setBtn(true);
-      }).catch(() => {});
+      tentandoTocar = false;
+      tentarTocar();
     } else {
       audio.pause();
       isPlaying = false;
