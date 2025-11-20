@@ -95,7 +95,7 @@
   ];
   
   let currentTrack = 0;
-  let isPlaying = false;
+  let isPlaying = true; // Começa ativado
 
   function setBtn(playing) {
     btn.style.opacity = playing ? '1' : '0.5';
@@ -116,15 +116,16 @@
   audio.addEventListener('ended', playNextTrack);
 
   // Inicia automaticamente sem modal
+  setBtn(true); // Botão aparece ativado desde o início
   loadTrack(currentTrack);
   setTimeout(() => {
     audio.play().then(() => {
       isPlaying = true;
       setBtn(true);
     }).catch(() => {
-      // Silenciosamente falha sem mostrar modal
-      isPlaying = false;
-      setBtn(false);
+      // Mantém botão ativado mesmo se falhar
+      isPlaying = true;
+      setBtn(true);
     });
   }, 500);
 
