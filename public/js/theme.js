@@ -80,13 +80,18 @@
 
   if (!audio || !btn) return;
 
-  // 🎄 Playlist de músicas natalinas
+  // 🎄 Playlist de músicas natalinas (ordem 1-10)
   const playlist = [
-    './assets/jingle-bells.mp3',
-    './assets/we-wish-you.mp3',
-    './assets/deck-the-halls.mp3',
-    './assets/silent-night.mp3',
-    './assets/feliz-navidad.mp3'
+    './assets/musicas/1 - jingle-bells-rock-125676.mp3',
+    './assets/musicas/2 - happy-christmas-music-437861.mp3',
+    './assets/musicas/3 - We Wish You A Merry Christmas - DJ Williams.mp3',
+    './assets/musicas/4 - christmas-holiday-438466.mp3',
+    './assets/musicas/5 - santa-claus-is-coming-to-town-christmas-piano-248543.mp3',
+    './assets/musicas/6 - let-it-snow-184565.mp3',
+    './assets/musicas/7 - christmas-438144.mp3',
+    './assets/musicas/8 - Snow Princess - Jimena Contreras.mp3',
+    './assets/musicas/9 - Oh Christmas Tree - DJ Williams.mp3',
+    './assets/musicas/10 - chrismas-happy-179609.mp3'
   ];
   
   let currentTrack = 0;
