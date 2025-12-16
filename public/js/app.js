@@ -210,51 +210,24 @@ auth.onAuthStateChanged(async u => {
 // Verifica se os uploads foram encerrados (configuração administrativa)
 async function verificarEncerramentoUploads() {
   try {
-    // Priorizar fallback local: se o admin aplicou uma ação localmente (por causa de regras), respeitar isso
     let encerrado = false;
-    let fim = null;
-    let usedLocal = false;
-
+    let doc;
     try {
-      const localEnc = localStorage.getItem('uploadsEncerrado');
-      const localFim = localStorage.getItem('uploadsFim');
-      const agora = new Date();
-      if (localEnc === 'true') {
-        encerrado = true;
-        usedLocal = true;
-      } else if (localEnc === 'false') {
-        encerrado = false;
-        usedLocal = true;
-      }
-      if (localFim) {
-        try {
-          const parsed = new Date(localFim);
-          fim = parsed;
-          if (agora > parsed) encerrado = true;
-          usedLocal = true;
-        } catch (e) { console.warn('uploadsFim localStorage inválido', e); }
-      }
-    } catch (e) {
-      console.warn('localStorage not available', e);
+      doc = await db.collection('settings').doc('uploads').get();
+      if (doc.exists) encerrado = doc.data().encerrado === true;
+    } catch (dbErr) {
+      console.warn('Não foi possível ler settings/uploads do Firestore, usando fallback localStorage se existir', dbErr);
     }
 
-    if (!usedLocal) {
-      try {
-        const doc = await db.collection('settings').doc('uploads').get();
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.encerrado === true) encerrado = true;
-          if (data.fim) {
-            try {
-              fim = data.fim.toDate ? data.fim.toDate() : new Date(data.fim);
-              const agora = new Date();
-              if (agora > fim) encerrado = true;
-            } catch (e) { console.warn('Erro ao interpretar campo fim em settings/uploads', e); }
-          }
-        }
-      } catch (dbErr) {
-        console.warn('Não foi possível ler settings/uploads do Firestore, e não há fallback local', dbErr);
+    // fallback: checar localStorage se Firestore indisponível ou doc não existir
+    try {
+      const local = localStorage.getItem('uploadsEncerrado');
+      if (local === 'true') encerrado = true;
+      if (local === 'false' && doc && doc.exists) {
+        // se há doc no firestore, firestore tem prioridade; caso contrário já seguiu local
       }
+    } catch (e) {
+      console.warn('localStorage not available');
     }
 
     const msg = document.getElementById('msg');
@@ -558,17 +531,6 @@ formUpload?.addEventListener('submit', async (e) => {
       msg.className = 'text-sm mt-3 font-medium text-blue-600';
     }
     
-    // Validar arquivo antes do upload
-    if (!file.type || !file.type.match(/^image\//)) {
-      alert('Arquivo inválido. Envie uma imagem (jpg/png).');
-      return;
-    }
-    const maxSize = 10 * 1024 * 1024; // 10 MB
-    if (file.size > maxSize) {
-      alert('Arquivo muito grande. Tamanho máximo: 10 MB.');
-      return;
-    }
-
     const path = `natal/${andar}Apto${apartamento}/${Date.now()}_${file.name}`;
     const snap = await storage.ref().child(path).put(file, { cacheControl: 'public,max-age=31536000' });
     const url = await snap.ref.getDownloadURL();
@@ -592,14 +554,11 @@ formUpload?.addEventListener('submit', async (e) => {
     await verificarEnvioUsuario();
     await carregarFotos();
   } catch (err) {
-    console.error('Erro no envio de foto:', err);
+    console.error(err);
     if (msg) {
-      const text = err && err.message ? err.message : 'Falha ao enviar. Tente novamente.';
-      msg.textContent = `❌ Falha ao enviar: ${text}`;
+      msg.textContent = '❌ Falha ao enviar. Tente novamente.';
       msg.className = 'text-sm mt-3 font-medium text-red-600';
     }
-    // Re-throw for debugging if needed
-    // throw err;
   }
 });
 
