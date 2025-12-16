@@ -73,6 +73,7 @@
         <button id="btnReabrirUploads" class="px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all flex items-center justify-center gap-2">
           ✅ Reabrir Uploads de Fotos
         </button>
+        <!-- Botão de abrir até 15:00 removido conforme solicitado -->
         <button id="btnDeletarTodasFotos" class="px-4 py-3 rounded-lg bg-red-900 hover:bg-red-950 text-white font-medium transition-all flex items-center justify-center gap-2">
           🔥 Deletar Todas as Fotos
         </button>
@@ -415,7 +416,7 @@
               encerrado: true,
               encerradoPor: firebase.auth().currentUser?.email || null,
               encerradoEm: firebase.firestore.Timestamp.now()
-            });
+            }, { merge: true });
             // salvar fallback local para casos offline
             try { localStorage.setItem('uploadsEncerrado', 'true'); } catch(e) { console.warn('localStorage not available'); }
             showAdminMsg('✅ Uploads de fotos encerrados com sucesso!');
@@ -439,7 +440,7 @@
               encerrado: false,
               reabertoPor: firebase.auth().currentUser?.email || null,
               reabertoEm: firebase.firestore.Timestamp.now()
-            });
+            }, { merge: true });
             try { localStorage.setItem('uploadsEncerrado', 'false'); } catch(e) { console.warn('localStorage not available'); }
             showAdminMsg('✅ Uploads de fotos reabertos com sucesso!');
           } catch (error) {
@@ -449,6 +450,8 @@
           }
         });
       }
+
+      // Botão de abrir até 15:00 removido — uploads estarão abertos por padrão
       
       // Zerar Votos
       const btnZerar = document.getElementById('btnZerarVotos');
