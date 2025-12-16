@@ -193,6 +193,7 @@ auth.onAuthStateChanged(async u => {
     await verificarEnvioUsuario(); // Verifica se já enviou foto
     await verificarSeJaVotou(); // Verifica se já votou
     await carregarFotos(); // Carregar fotos após verificar voto
+    await verificarEncerramentoUploads();
   } else {
     isAdmin = false;
     usuarioJaVotou = false;
@@ -202,8 +203,72 @@ auth.onAuthStateChanged(async u => {
     logoutBtn?.classList.add('hidden');
     if (formUpload) formUpload.reset();
     await carregarFotos();
+    await verificarEncerramentoUploads();
   }
 });
+
+// Verifica se os uploads foram encerrados (configuração administrativa)
+async function verificarEncerramentoUploads() {
+  try {
+    let encerrado = false;
+    let doc;
+    try {
+      doc = await db.collection('settings').doc('uploads').get();
+      if (doc.exists) encerrado = doc.data().encerrado === true;
+    } catch (dbErr) {
+      console.warn('Não foi possível ler settings/uploads do Firestore, usando fallback localStorage se existir', dbErr);
+    }
+
+    // fallback: checar localStorage se Firestore indisponível ou doc não existir
+    try {
+      const local = localStorage.getItem('uploadsEncerrado');
+      if (local === 'true') encerrado = true;
+      if (local === 'false' && doc && doc.exists) {
+        // se há doc no firestore, firestore tem prioridade; caso contrário já seguiu local
+      }
+    } catch (e) {
+      console.warn('localStorage not available');
+    }
+
+    const msg = document.getElementById('msg');
+    const submitBtn = formUpload?.querySelector('button[type="submit"]');
+    const fotoInput = document.getElementById('foto');
+
+    if (encerrado) {
+      if (msg) {
+        msg.className = 'text-sm mt-3 font-medium text-red-600';
+        msg.textContent = 'Postagem de fotos já encerrada!';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtn.textContent = '⛔ Postagens encerradas';
+      }
+      if (andarSelect) andarSelect.disabled = true;
+      if (apartamentoSelect) apartamentoSelect.disabled = true;
+      if (fotoInput) fotoInput.disabled = true;
+      if (formUpload) {
+        formUpload.addEventListener('submit', function(e){
+          e.preventDefault();
+          return false;
+        }, { passive: false });
+      }
+    } else {
+      // Reverter, se necessário
+      if (msg && msg.textContent === 'Postagem de fotos já encerrada!') msg.textContent = '';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.textContent = '🎄 Enviar Foto';
+      }
+      if (andarSelect) andarSelect.disabled = false;
+      if (apartamentoSelect) apartamentoSelect.disabled = true;
+      if (fotoInput) fotoInput.disabled = false;
+    }
+  } catch (error) {
+    console.error('Erro ao verificar encerramento uploads:', error);
+  }
+}
 
 async function carregarFotos() {
   if (!galeria) return;
