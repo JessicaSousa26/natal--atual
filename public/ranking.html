@@ -66,12 +66,6 @@
         <button id="btnRestaurarFotos" class="px-4 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-all flex items-center justify-center gap-2">
           🖼️ Restaurar Fotos
         </button>
-        <button id="btnEncerrarUploads" class="px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-all flex items-center justify-center gap-2">
-          ⛔ Encerrar Uploads de Fotos
-        </button>
-        <button id="btnReabrirUploads" class="px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-all flex items-center justify-center gap-2">
-          ✅ Reabrir Uploads de Fotos
-        </button>
         <button id="btnDeletarTodasFotos" class="px-4 py-3 rounded-lg bg-red-900 hover:bg-red-950 text-white font-medium transition-all flex items-center justify-center gap-2">
           🔥 Deletar Todas as Fotos
         </button>
@@ -399,47 +393,6 @@
             showAdminMsg('✅ Votação encerrada com sucesso!');
           } catch (error) {
             showAdminMsg('❌ Erro ao encerrar votação: ' + error.message, true);
-          }
-        });
-      }
-
-      // Encerrar Uploads de Fotos (bloquear novos envios)
-      const btnEncerrarUploads = document.getElementById('btnEncerrarUploads');
-      console.log('Button encerrar uploads found:', !!btnEncerrarUploads);
-      if (btnEncerrarUploads) {
-        btnEncerrarUploads.addEventListener('click', async () => {
-          if (!confirm('Deseja encerrar o envio de fotos agora? Os novos envios serão bloqueados.')) return;
-          try {
-            await db.collection('settings').doc('uploads').set({
-              encerrado: true,
-              encerradoPor: firebase.auth().currentUser?.email || null,
-              encerradoEm: firebase.firestore.Timestamp.now()
-            });
-            // salvar fallback local para casos offline
-            try { localStorage.setItem('uploadsEncerrado', 'true'); } catch(e) { console.warn('localStorage not available'); }
-            showAdminMsg('✅ Uploads de fotos encerrados com sucesso!');
-          } catch (error) {
-            showAdminMsg('❌ Erro ao encerrar uploads: ' + error.message, true);
-          }
-        });
-      }
-
-      // Reabrir Uploads de Fotos (desbloquear novos envios)
-      const btnReabrirUploads = document.getElementById('btnReabrirUploads');
-      console.log('Button reabrir uploads found:', !!btnReabrirUploads);
-      if (btnReabrirUploads) {
-        btnReabrirUploads.addEventListener('click', async () => {
-          if (!confirm('Deseja reabrir o envio de fotos agora? Os envios serão liberados novamente.')) return;
-          try {
-            await db.collection('settings').doc('uploads').set({
-              encerrado: false,
-              reabertoPor: firebase.auth().currentUser?.email || null,
-              reabertoEm: firebase.firestore.Timestamp.now()
-            });
-            try { localStorage.setItem('uploadsEncerrado', 'false'); } catch(e) { console.warn('localStorage not available'); }
-            showAdminMsg('✅ Uploads de fotos reabertos com sucesso!');
-          } catch (error) {
-            showAdminMsg('❌ Erro ao reabrir uploads: ' + error.message, true);
           }
         });
       }
