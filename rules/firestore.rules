@@ -2,11 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Função auxiliar para verificar se é admin
+    // Função auxiliar para verificar se é admin (aceita variações de case no e-mail)
     function isAdmin() {
-      return request.auth != null && 
-             (request.auth.token.email == 'jhessymary26@gmail.com' ||
-              request.auth.uid == 'p4xZbXWYnjWKN87wGiVpPvRBxAn2');
+      return request.auth != null && (
+        // UID do admin listado
+        request.auth.uid == 'p4xZbXWYnjWKN87wGiVpPvRBxAn2'
+        // ou e-mail do admin (normalizado para minúsculas quando disponível)
+        || (request.auth.token.email != null && request.auth.token.email.toLowerCase() == 'jhessymary26@gmail.com')
+      );
     }
 
     match /settings/votacao {
