@@ -1,0 +1,11 @@
+{
+  "firestore": {
+    "rules": "rules/firestore.rules"
+  },
+  "storage": [
+    {
+      "bucket": "natal-votacao-vercel.appspot.com",
+      "rules": "rules/storage.rules"
+    }
+  ]
+}
