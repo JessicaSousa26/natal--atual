@@ -97,6 +97,26 @@ andarSelect?.addEventListener('change', function() {
 
 // Verificar se usuário já enviou foto
 async function verificarEnvioUsuario() {
+  const msg = document.getElementById('msg');
+  const submitBtn = formUpload?.querySelector('button[type="submit"]');
+  const andarSelect = document.getElementById('andar');
+  const apartamentoSelect = document.getElementById('apartamento');
+  const fotoInput = document.getElementById('foto');
+  
+  // ❌ DESABILITAR UPLOADS - Postagem de fotos encerrada!
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-600');
+    submitBtn.textContent = '❌ Postagem de fotos encerrada!';
+  }
+  if (andarSelect) andarSelect.disabled = true;
+  if (apartamentoSelect) apartamentoSelect.disabled = true;
+  if (fotoInput) fotoInput.disabled = true;
+  if (msg) {
+    msg.className = 'text-sm mt-3 font-medium text-red-600';
+    msg.textContent = 'Postagem de fotos já encerrada!';
+  }
+  
   if (!currentUser) {
     usuarioJaEnviou = false;
     return;
