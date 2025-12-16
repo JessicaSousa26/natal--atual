@@ -28,12 +28,7 @@ service cloud.firestore {
       allow read: if true;
 
       // Admin pode criar sem restrições, usuários normais têm validações
-      allow create: if isAdmin() 
-        || (request.auth != null
-        && request.resource.data.andar is int
-        && request.resource.data.apartamento is string
-        && request.resource.data.urlFoto is string
-        && request.resource.data.votos == 0);
+      allow create: if request.auth != null;
 
       // Apenas admin pode deletar
       allow delete: if isAdmin();
