@@ -11,6 +11,28 @@ const periodoAviso = document.getElementById('periodoAviso');
 const andarSelect = document.getElementById('andar');
 const apartamentoSelect = document.getElementById('apartamento');
 
+// ❌ BLOQUEAR UPLOADS IMEDIATAMENTE AO CARREGAR
+window.addEventListener('DOMContentLoaded', () => {
+  const msg = document.getElementById('msg');
+  const submitBtn = formUpload?.querySelector('button[type="submit"]');
+  const fotoInput = document.getElementById('foto');
+  
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    submitBtn.classList.remove('bg-gradient-to-r', 'from-red-600', 'to-red-700');
+    submitBtn.classList.add('bg-red-600');
+    submitBtn.textContent = '❌ Postagem de fotos encerrada!';
+  }
+  if (andarSelect) andarSelect.disabled = true;
+  if (apartamentoSelect) apartamentoSelect.disabled = true;
+  if (fotoInput) fotoInput.disabled = true;
+  if (msg) {
+    msg.className = 'text-sm mt-3 font-medium text-red-600';
+    msg.textContent = 'Postagem de fotos já encerrada!';
+  }
+});
+
 // Elementos de paginação
 const paginacaoControles = document.getElementById('paginacaoControles');
 const itensPorPaginaSelect = document.getElementById('itensPorPagina');
