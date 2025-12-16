@@ -14,12 +14,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
-    // Permitir leitura pública e escrita apenas para administradores do controle de uploads
-    match /settings/uploads {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
     match /backups_votos/{backupId} {
       allow read: if true;  // Permitir leitura pública temporariamente para debug
       allow write, delete: if isAdmin();
