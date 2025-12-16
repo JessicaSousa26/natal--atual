@@ -664,10 +664,10 @@
       const tituloEl = document.getElementById('contadorTitulo');
       const mensagemEl = document.getElementById('contadorMensagem');
       
-      // Data de início: 18/11/2025 às 16:00
-      const dataInicio = new Date('2025-11-18T16:00:00-03:00').getTime();
-      // Data de fim de postagens: 14/12/2025 às 23:59
-      const dataFim = new Date('2025-12-14T23:59:59-03:00').getTime();
+      // Data de início: 16/12/2025 às 00:00
+      const dataInicio = new Date('2025-12-16T00:00:00-03:00').getTime();
+      // Data de fim: 21/12/2025 às 23:59
+      const dataFim = new Date('2025-12-21T23:59:59-03:00').getTime();
       
       function atualizarContador() {
         const agora = new Date().getTime();
@@ -679,11 +679,11 @@
           mensagemEl.textContent = 'Votação começa em 18/11/2025 às 16h00';
           atualizarDisplay(diferenca);
         }
-        // Se durante o período de postagens
+        // Se durante o período da votação
         else if (agora >= dataInicio && agora <= dataFim) {
           const diferenca = dataFim - agora;
-          tituloEl.textContent = '⏰ Postagem das fotos encerra em:';
-          mensagemEl.textContent = 'Postagem válida até 14/12/2025 às 23h59';
+          tituloEl.textContent = '⏰ Votação termina em:';
+          mensagemEl.textContent = 'Votação Iniciada';
           atualizarDisplay(diferenca);
         }
         // Se após o fim
