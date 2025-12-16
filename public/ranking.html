@@ -421,10 +421,7 @@
             try { localStorage.setItem('uploadsEncerrado', 'true'); } catch(e) { console.warn('localStorage not available'); }
             showAdminMsg('✅ Uploads de fotos encerrados com sucesso!');
           } catch (error) {
-            // se falhar por permissões, usar fallback local e avisar o admin para implantar regras
-            try { localStorage.setItem('uploadsEncerrado', 'true'); } catch(e) { console.warn('localStorage not available'); }
-            showAdminMsg('⚠️ Não foi possível gravar no Firestore: ' + error.message + '. Aplicado fallback local. Verifique regras e faça deploy.', true);
-            console.error('Erro ao encerrar uploads (Firestore). Fallback local aplicado.', error);
+            showAdminMsg('❌ Erro ao encerrar uploads: ' + error.message, true);
           }
         });
       }
@@ -444,9 +441,7 @@
             try { localStorage.setItem('uploadsEncerrado', 'false'); } catch(e) { console.warn('localStorage not available'); }
             showAdminMsg('✅ Uploads de fotos reabertos com sucesso!');
           } catch (error) {
-            try { localStorage.setItem('uploadsEncerrado', 'false'); } catch(e) { console.warn('localStorage not available'); }
-            showAdminMsg('⚠️ Não foi possível gravar no Firestore: ' + error.message + '. Aplicado fallback local. Verifique regras e faça deploy.', true);
-            console.error('Erro ao reabrir uploads (Firestore). Fallback local aplicado.', error);
+            showAdminMsg('❌ Erro ao reabrir uploads: ' + error.message, true);
           }
         });
       }
