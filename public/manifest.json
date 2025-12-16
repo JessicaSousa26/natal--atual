@@ -9,12 +9,12 @@
   "theme_color": "#0f766e",
   "icons": [
     {
-      "src": "./assets/icon-192.png",
+      "src": "./assets/patrocinadores/anna.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./assets/icon-512.png",
+      "src": "./assets/patrocinadores/anna.png",
       "sizes": "512x512",
       "type": "image/png"
     }
