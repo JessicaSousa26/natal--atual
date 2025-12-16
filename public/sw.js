@@ -37,32 +37,17 @@ self.addEventListener('fetch', (e) => {
   if (req.headers.get('accept')?.includes('text/html')) {
     e.respondWith(
       fetch(req).then(res => {
-        // Guard: só tentar armazenar respostas válidas e de esquemas http(s)
-        try {
-          const url = new URL(req.url);
-          if ((url.protocol === 'http:' || url.protocol === 'https:') && res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(STATIC_CACHE).then(c => c.put(req, copy)).catch(() => {});
-          }
-        } catch (err) {
-          // url parsing ou cache falhou — ignorar para não poluir o log
-        }
+        const copy = res.clone();
+        caches.open(STATIC_CACHE).then(c => c.put(req, copy));
         return res;
       }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
     );
     return;
   }
-    e.respondWith(
+  e.respondWith(
     caches.match(req).then(cached => cached || fetch(req).then(res => {
-      try {
-        const url = new URL(req.url);
-        if ((url.protocol === 'http:' || url.protocol === 'https:') && res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(STATIC_CACHE).then(c => c.put(req, copy)).catch(() => {});
-        }
-      } catch (err) {
-        // ignorar URLs inválidas (ex: chrome-extension://) ou erros de cache
-      }
+      const copy = res.clone();
+      caches.open(STATIC_CACHE).then(c => c.put(req, copy));
       return res;
     }).catch(() => cached))
   );
