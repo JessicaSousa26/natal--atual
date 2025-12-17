@@ -47,6 +47,9 @@ const ADMIN_EMAILS = ['jhessymary26@gmail.com'];
 let usuarioJaEnviou = false;
 let termosAceitos = localStorage.getItem('termosAceitosNatal2025') === 'true';
 
+// ❌ FLAG GLOBAL - UPLOADS BLOQUEADOS PERMANENTEMENTE
+const UPLOADS_BLOQUEADOS = true;
+
 // Variáveis de paginação
 let todasFotos = [];
 let paginaAtual = 1;
@@ -125,18 +128,22 @@ async function verificarEnvioUsuario() {
   const apartamentoSelect = document.getElementById('apartamento');
   const fotoInput = document.getElementById('foto');
   
-  // ❌ DESABILITAR UPLOADS - Postagem de fotos encerrada!
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-600');
-    submitBtn.textContent = '❌ Postagem de fotos encerrada!';
-  }
-  if (andarSelect) andarSelect.disabled = true;
-  if (apartamentoSelect) apartamentoSelect.disabled = true;
-  if (fotoInput) fotoInput.disabled = true;
-  if (msg) {
-    msg.className = 'text-sm mt-3 font-medium text-red-600';
-    msg.textContent = 'Postagem de fotos já encerrada!';
+  // ❌ BLOQUEAR PERMANENTEMENTE - Postagem de fotos encerrada!
+  if (UPLOADS_BLOQUEADOS) {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-red-600');
+      submitBtn.classList.remove('from-red-600', 'to-red-700', 'from-red-700', 'to-red-800');
+      submitBtn.textContent = '❌ Postagem de fotos encerrada!';
+    }
+    if (andarSelect) andarSelect.disabled = true;
+    if (apartamentoSelect) apartamentoSelect.disabled = true;
+    if (fotoInput) fotoInput.disabled = true;
+    if (msg) {
+      msg.className = 'text-sm mt-3 font-medium text-red-600';
+      msg.textContent = 'Postagem de fotos já encerrada!';
+    }
+    return; // RETORNA AQUI E NÃO CONTINUA O RESTO DA FUNÇÃO
   }
   
   if (!currentUser) {
@@ -151,9 +158,6 @@ async function verificarEnvioUsuario() {
       .get();
     
     usuarioJaEnviou = !snap.empty;
-    
-    const msg = document.getElementById('msg');
-    const submitBtn = formUpload?.querySelector('button[type="submit"]');
     
     if (usuarioJaEnviou && snap.docs[0]) {
       const dadosFoto = snap.docs[0].data();
