@@ -139,7 +139,7 @@
             <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-1">Seg</div>
           </div>
         </div>
-        <p class="text-white/90 text-sm mt-4" id="contadorMensagem">Votação inicia em 17/11/2025 às 09h00</p>
+        <p class="text-white/90 text-sm mt-4" id="contadorMensagem">Votação inicia em 15/12/2025 às 10h00</p>
       </div>
     </div>
   </section>
@@ -453,6 +453,44 @@
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-8">
     <div id="periodoAviso" class="hidden p-3 rounded-lg bg-yellow-100 text-yellow-900 text-sm"></div>
 
+    <!-- Tela de Encerramento -->
+    <div id="telaEncerramento" style="display: none;" class="fixed inset-0 bg-gradient-to-b from-emerald-700 via-red-600 to-emerald-700 z-50 flex items-center justify-center">
+      <div class="text-center space-y-8 px-4">
+        <h1 class="text-6xl md:text-7xl font-extrabold text-white" style="font-family: 'Brush Script MT', cursive;">
+          🎉 Votação Encerrada! 🎉
+        </h1>
+        
+        <div class="space-y-6">
+          <div class="grid grid-cols-4 gap-3 md:gap-6 max-w-2xl mx-auto">
+            <div class="px-6 py-4 bg-white/20 backdrop-blur-sm rounded-lg border-2 border-white">
+              <div class="text-4xl md:text-5xl font-bold text-white">00</div>
+              <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-2">Dias</div>
+            </div>
+            <div class="px-6 py-4 bg-white/20 backdrop-blur-sm rounded-lg border-2 border-white">
+              <div class="text-4xl md:text-5xl font-bold text-white">00</div>
+              <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-2">Horas</div>
+            </div>
+            <div class="px-6 py-4 bg-white/20 backdrop-blur-sm rounded-lg border-2 border-white">
+              <div class="text-4xl md:text-5xl font-bold text-white">00</div>
+              <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-2">Min</div>
+            </div>
+            <div class="px-6 py-4 bg-white/20 backdrop-blur-sm rounded-lg border-2 border-white">
+              <div class="text-4xl md:text-5xl font-bold text-white">00</div>
+              <div class="text-xs md:text-sm text-white/90 uppercase tracking-wide mt-2">Seg</div>
+            </div>
+          </div>
+          
+          <div class="text-2xl md:text-3xl text-white font-semibold">
+            Aguarde a divulgação dos vencedores
+          </div>
+          
+          <div class="text-lg text-white/90">
+            Obrigado por participar! 🎄✨
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Form de Upload -->
     <section class="xmas-card rounded-2xl shadow-lg p-6 border-2 border-emerald-200">
       <h2 class="text-2xl font-bold mb-4 text-emerald-700 flex items-center gap-2">
@@ -653,7 +691,7 @@
       window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=1.5.2').catch(()=>{}));
     }
     
-    // ⏰ Contador Regressivo
+    // ⏰ Contador Regressivo - Votação: 15/12/2025 10:00 até 21/12/2025 23:59
     (function() {
       const diasEl = document.getElementById('dias');
       const horasEl = document.getElementById('horas');
@@ -661,30 +699,31 @@
       const segundosEl = document.getElementById('segundos');
       const tituloEl = document.getElementById('contadorTitulo');
       const mensagemEl = document.getElementById('contadorMensagem');
+      const contadorEl = document.getElementById('contador');
       
-      // Data de início: 18/11/2025 às 16:00
-      const dataInicio = new Date('2025-11-18T16:00:00-03:00').getTime();
-      // Data de fim de postagens: 14/12/2025 às 23:59
-      const dataFim = new Date('2025-12-14T23:59:59-03:00').getTime();
+      // Data de início da votação: 15/12/2025 às 10:00
+      const dataInicio = new Date('2025-12-15T10:00:00-03:00').getTime();
+      // Data de encerramento da votação: 21/12/2025 às 23:59:59
+      const dataFim = new Date('2025-12-21T23:59:59-03:00').getTime();
       
       function atualizarContador() {
         const agora = new Date().getTime();
         
-        // Se antes do início
+        // Se antes do início da votação
         if (agora < dataInicio) {
           const diferenca = dataInicio - agora;
           tituloEl.textContent = '⏰ Votação inicia em:';
-          mensagemEl.textContent = 'Votação começa em 18/11/2025 às 16h00';
+          mensagemEl.textContent = 'Votação começa em 15/12/2025 às 10h00';
           atualizarDisplay(diferenca);
         }
-        // Se durante o período de postagens
-        else if (agora >= dataInicio && agora <= dataFim) {
+        // Se durante o período de votação
+        else if (agora >= dataInicio && agora < dataFim) {
           const diferenca = dataFim - agora;
-          tituloEl.textContent = '⏰ Postagem das fotos encerra em:';
-          mensagemEl.textContent = 'Postagem válida até 14/12/2025 às 23h59';
+          tituloEl.textContent = '⏰ Votação encerra em:';
+          mensagemEl.textContent = 'Votação válida até 21/12/2025 às 23h59';
           atualizarDisplay(diferenca);
         }
-        // Se após o fim
+        // Se após o encerramento
         else {
           tituloEl.textContent = '🎉 Votação Encerrada!';
           mensagemEl.textContent = 'Aguarde a divulgação dos vencedores';
@@ -692,7 +731,9 @@
           horasEl.textContent = '00';
           minutosEl.textContent = '00';
           segundosEl.textContent = '00';
-          clearInterval(intervalo);
+          if (contadorEl) contadorEl.classList.add('opacity-50');
+          if (typeof clearInterval !== 'undefined' && intervalo) clearInterval(intervalo);
+          mostrarTelaEncerramento();
         }
       }
       
@@ -708,11 +749,24 @@
         segundosEl.textContent = String(segundos).padStart(2, '0');
       }
       
+      function mostrarTelaEncerramento() {
+        // Ocultar seções de votação e upload
+        const main = document.querySelector('main');
+        if (main) {
+          main.style.display = 'none';
+        }
+        
+        // Mostrar página de encerramento
+        if (document.getElementById('telaEncerramento')) {
+          document.getElementById('telaEncerramento').style.display = 'block';
+        }
+      }
+      
       // Atualizar imediatamente
       atualizarContador();
       
       // Atualizar a cada segundo
-      const intervalo = setInterval(atualizarContador, 1000);
+      let intervalo = setInterval(atualizarContador, 1000);
     })();
   </script>
 </body>

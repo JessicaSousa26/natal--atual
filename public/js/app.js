@@ -2,6 +2,22 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+/**
+ * ⏰ CONFIGURAÇÃO DE DATAS DA VOTAÇÃO
+ * 
+ * IMPORTANTE: O Firestore deve ter o documento "settings/votacao" com:
+ * {
+ *   "inicio": Timestamp(2025-12-15 10:00:00 -03:00),
+ *   "fim": Timestamp(2025-12-21 23:59:59 -03:00)
+ * }
+ * 
+ * Frontend (contador regressivo em index.html):
+ * - Começar: 15/12/2025 às 10:00
+ * - Encerrar: 21/12/2025 às 23:59:59
+ * 
+ * Após 21/12/2025 23:59:59 o site exibe página de encerramento (encerramento.html)
+ */
+
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userInfo = document.getElementById('userInfo');
