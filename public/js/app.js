@@ -214,10 +214,37 @@ async function carregarPeriodo() {
 loginBtn?.addEventListener('click', async () => {
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
+    provider.addScope('profile');
+    provider.addScope('email');
+    provider.setCustomParameters({
+      'login_hint': '',
+      'prompt': 'select_account'
+    });
+    
+    const result = await auth.signInWithPopup(provider);
+    console.log('✅ Login com sucesso:', result.user.email);
   } catch (error) {
-    console.error('Erro no login:', error);
-    alert('Erro ao fazer login: ' + error.message);
+    console.error('❌ Erro no login:', error.code, error.message);
+    
+    // Mensagens de erro mais específicas
+    let msg = 'Erro ao fazer login: ';
+    switch(error.code) {
+      case 'auth/popup-blocked':
+        msg += 'Pop-up foi bloqueado. Por favor, permita pop-ups para este site.';
+        break;
+      case 'auth/popup-closed-by-user':
+        msg += 'Login cancelado.';
+        break;
+      case 'auth/unauthorized-domain':
+        msg += 'Este domínio não está autorizado. Verifique as configurações do Firebase.';
+        break;
+      case 'auth/network-request-failed':
+        msg += 'Erro de conexão. Verifique sua internet.';
+        break;
+      default:
+        msg += error.message;
+    }
+    alert(msg);
   }
 });
 
